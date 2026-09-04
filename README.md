@@ -1,43 +1,43 @@
-# 🏛️ Sovereign On-Premise Agentic AI Workbench (SIH PSC26117)
+# Sovereign On-Premise Agentic AI Workbench (SIH PSC26117)
 
-A fully sovereign, privacy-first, on-premise AI workbench designed for public sector enterprise procurement and document intelligence. Built for **Smart India Hackathon (SIH 2025 - Problem Statement PSC26117)**.
+A fully sovereign, privacy-first, on-premise AI workbench designed for public sector enterprise procurement and document intelligence. Built for Smart India Hackathon (SIH 2025 - Problem Statement PSC26117).
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 1. **Dual-Engine LLM Architecture**
-   - Fast Free Cloud Tier (Groq / Gemini APIs) for rapid responses.
-   - Local Open-Weight Fallback (Ollama - Llama 3 / DeepSeek / Mistral) for 100% offline air-gapped security.
+   - High-throughput Cloud Inference Engine (Groq / Gemini APIs).
+   - Local Open-Weight Fallback (Ollama - Llama 3 / DeepSeek / Mistral) for 100% offline air-gapped deployment.
 
 2. **Instant Cookie Session Vault**
-   - Bypasses repeated OTP delays during GeM (Government e-Marketplace) portal workflows using encrypted local session token management.
+   - Eliminates repeated OTP verification friction during portal workflows via local encrypted session token management.
 
 3. **Hybrid RAG & Document Processing**
-   - High-throughput OCR, document parsing, chunking, and semantic vector search across local PDFs and spreadsheets.
+   - High-throughput OCR, document parsing, text chunking, and semantic vector search across local PDFs and spreadsheets.
 
 4. **Tender & Compliance Intelligence Agent**
    - Automated bid matching, eligibility criteria verification, and compliance matrix generation.
 
-5. **Interactive Executive Presentation & PDF Exporter**
-   - Neumorphic presentation interface (`index.html`) with interactive 3D wave background animations.
-   - High-resolution PDF exporter (`export_pdf.js`) rendering 2× retina slides using Puppeteer.
+5. **Executive Presentation & PDF Exporter**
+   - Neumorphic presentation interface (`index.html`) with dynamic background wave renderers.
+   - High-resolution PDF exporter (`export_pdf.js`) rendering retina slides via Puppeteer.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
-- **Python 3.10+**
-- **Node.js 18+** & **npm**
-- *(Optional)* **Ollama** installed locally with `llama3` or `deepseek-r1` pulled.
+- Python 3.10+
+- Node.js 18+ and npm
+- (Optional) Ollama installed locally with Llama 3 or DeepSeek model instances.
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/sovereign-ai-workbench.git
-   cd sovereign-ai-workbench
+   git clone https://github.com/Gulshan-Singh-gs/SIH-ppt.git
+   cd SIH-ppt
    ```
 
 2. Install Python dependencies:
@@ -52,28 +52,28 @@ A fully sovereign, privacy-first, on-premise AI workbench designed for public se
 
 ---
 
-## 🏃 Usage
+## Usage
 
-### Running the Workbench Backend Server
-Double-click `Launch_Sovereign_Workbench.bat` or run:
+### Running the Backend Server
+Execute the launcher script or run:
 ```bash
 python server.py
 ```
 The FastAPI backend server will launch at `http://127.0.0.1:8001`.
 
 ### Viewing the Presentation UI
-Open `index.html` directly in any web browser to view the 12-slide interactive Neumorphic pitch deck.
+Open `index.html` directly in any standard web browser to view the 12-slide executive presentation.
 
 ### Exporting Presentation to High-Quality PDF
 Run the Puppeteer export script:
 ```bash
 node export_pdf.js
 ```
-The generated PDF will be saved into the `output/` folder as `Sovereign_AI_Workbench_Presentation.pdf`.
+The generated PDF will be saved in the `output/` directory as `Sovereign_AI_Workbench_Presentation.pdf`.
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 .
@@ -99,14 +99,14 @@ The generated PDF will be saved into the `output/` folder as `Sovereign_AI_Workb
 
 ---
 
-## 🛡️ Privacy & Security
+## Privacy & Security
 
-- **Zero External Telemetry**: All data processing remains local.
-- **Air-Gap Ready**: Gracefully degrades to local Ollama models when network connection is severed.
-- **Session Protection**: Encryption-at-rest for session credentials stored locally.
+- Zero External Telemetry: Data processing remains local to the execution environment.
+- Air-Gap Support: Operates seamlessly on local open-weight models when disconnected from external networks.
+- Local Credential Encryption: Session tokens are stored using local AES encryption-at-rest.
 
 ---
 
-## 📜 License
+## License
 
-Distributed under the MIT License. See `LICENSE` for details.
+Distributed under the MIT License.
