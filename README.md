@@ -6,9 +6,8 @@ A fully sovereign, privacy-first, on-premise AI workbench designed for public se
 
 ## Key Features
 
-1. **Dual-Engine LLM Architecture**
-   - High-throughput Cloud Inference Engine (Groq / Gemini APIs).
-   - Local Open-Weight Fallback (Ollama - Llama 3 / DeepSeek / Mistral) for 100% offline air-gapped deployment.
+1. **Sovereign Local LLM Architecture**
+   - 100% On-Premise Local LLM Execution Engine powered by local open-weight models (Ollama - Llama 3 / DeepSeek / Mistral) for air-gapped security and data sovereignty.
 
 2. **Instant Cookie Session Vault**
    - Eliminates repeated OTP verification friction during portal workflows via local encrypted session token management.
@@ -30,7 +29,7 @@ A fully sovereign, privacy-first, on-premise AI workbench designed for public se
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+ and npm
-- (Optional) Ollama installed locally with Llama 3 or DeepSeek model instances.
+- Ollama installed locally with Llama 3 or DeepSeek model instances.
 
 ### Installation
 
@@ -79,7 +78,7 @@ The generated PDF will be saved in the `output/` directory as `Sovereign_AI_Work
 .
 ├── index.html                   # 12-Slide Neumorphic Executive Presentation UI
 ├── server.py                    # Core FastAPI Server & REST Endpoints
-├── dual_engine_llm.py           # Cloud + Local LLM Routing Engine
+├── dual_engine_llm.py           # On-Premise Local LLM Routing Engine
 ├── local_rag_engine.py          # Vector RAG & Document Indexing Engine
 ├── document_processor.py        # OCR & Multi-Format Document Parser
 ├── tender_agent.py              # GeM Tender Matching & Compliance Agent
@@ -101,8 +100,8 @@ The generated PDF will be saved in the `output/` directory as `Sovereign_AI_Work
 
 ## Privacy & Security
 
-- Zero External Telemetry: Data processing remains local to the execution environment.
-- Air-Gap Support: Operates seamlessly on local open-weight models when disconnected from external networks.
+- Zero External Telemetry: Data processing remains strictly local to the execution environment.
+- Air-Gap Native: Operates 100% offline on local open-weight models without external network dependencies.
 - Local Credential Encryption: Session tokens are stored using local AES encryption-at-rest.
 
 ---

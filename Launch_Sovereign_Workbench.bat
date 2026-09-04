@@ -2,8 +2,8 @@
 title Sovereign On-Premise Agentic AI Workbench (SIH PSC26117)
 color 0A
 echo ====================================================================
-echo   🏛️ Sovereign On-Premise Agentic AI Workbench (SIH PSC26117)
-echo   Dual-Engine Fast Free API (Groq + Gemini) & Local Open-Weight LLM
+echo   Sovereign On-Premise Agentic AI Workbench (SIH PSC26117)
+echo   100% Privacy-First Local Open-Weight LLM Execution
 echo   Instant Cookie Session Vault (Zero OTP Delay)
 echo ====================================================================
 echo.
