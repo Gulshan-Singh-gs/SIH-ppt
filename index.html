@@ -690,11 +690,84 @@
         :focus-visible { outline: 2px solid var(--slide-accent); outline-offset: 2px; }
 
         /* ─── responsive ─── */
-        @media (max-width: 600px) {
-            .slide { padding: 5% 4%; padding-bottom: 80px; }
-            .ps-pair { grid-template-columns: 1fr; gap: 4px; }
-            .ps-pair .arrow { transform: rotate(90deg); padding: 2px 0; }
-            .comp-row { grid-template-columns: 1fr; gap: 2px; text-align: center; }
+        @media (max-width: 768px) {
+            :root {
+                --slide-margin: 16px;
+            }
+            .slide {
+                padding: 16px 12px;
+                padding-bottom: 84px;
+                justify-content: flex-start;
+            }
+            .slide-content {
+                padding: 8px 4px;
+                justify-content: flex-start;
+                max-height: none;
+            }
+            h1 { font-size: clamp(1.6rem, 6.5vw, 2.4rem); }
+            h2 { font-size: clamp(1.2rem, 4.5vw, 1.7rem); }
+            .bottom-nav-bar {
+                width: calc(100% - 24px);
+                max-width: 380px;
+                justify-content: space-between;
+                padding: 4px 10px;
+                bottom: 12px;
+            }
+            .nav-slide-title {
+                max-width: 140px;
+                font-size: 0.72rem;
+            }
+            .slide-counter {
+                bottom: 16px;
+                right: 14px;
+                font-size: 0.72rem;
+                padding: 3px 10px;
+                opacity: 0.85;
+            }
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+            .ps-pair {
+                grid-template-columns: 1fr !important;
+                gap: 6px !important;
+            }
+            .ps-pair .arrow {
+                transform: rotate(90deg);
+                text-align: center;
+                margin: -4px 0;
+            }
+            .comp-row {
+                grid-template-columns: 1fr !important;
+                gap: 4px !important;
+                text-align: center;
+            }
+            .scenario-card {
+                padding: 16px 14px;
+                font-size: 0.92rem;
+            }
+            .card, .tile, .tile-inset {
+                padding: 14px 12px;
+            }
+            .cta-button {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 1rem;
+            }
+            .stat-tile .number, .roi-tile .roi-number {
+                font-size: 1.8rem;
+            }
+            .edge-zone {
+                width: 10%;
+            }
+        }
+        @media (max-width: 480px) {
+            .slide-counter {
+                display: none; /* hide floating counter on tiny screens to preserve nav bar space */
+            }
+            .nav-slide-title {
+                max-width: 160px;
+            }
         }
     </style>
 </head>
