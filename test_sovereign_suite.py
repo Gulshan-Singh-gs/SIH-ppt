@@ -1,7 +1,7 @@
 """
 Comprehensive Verification Suite for Sovereign Agentic AI Workbench (SIH PSC26117)
 Tests:
-1. Dual-Engine LLM Router (Groq + Gemini + Local Fallback)
+1. Sovereign Local Open-Weight LLM Engine
 2. Instant Cookie Session Vault (AES-256 Storage & Injection)
 3. Autonomous Government Tender Agent (Playwright Navigation & Scraping)
 4. All 13 SDLC Artifacts Integrity & Manifest Validation
@@ -25,15 +25,13 @@ class TestSovereignWorkbenchSuite(unittest.TestCase):
         self.client = TestClient(app)
         self.output_dir = Path(__file__).resolve().parent / "output"
 
-    def test_01_dual_engine_status(self):
-        """Verify Dual-Engine LLM router detects configured models and defaults."""
+    def test_01_local_engine_status(self):
+        """Verify Sovereign Local LLM engine detects configured local models."""
         llm = DualEngineLLM()
         info = llm.get_active_engine_info()
-        self.assertIn("groq", info)
-        self.assertIn("gemini", info)
         self.assertIn("local_sovereign", info)
-        self.assertEqual(info["groq"]["model"], "llama-3.3-70b-versatile")
-        print("[PASS] Test 1: Dual-Engine Status Verified.")
+        self.assertEqual(info["local_sovereign"]["model"], "llama3:latest")
+        print("[PASS] Test 1: Sovereign Local Engine Status Verified.")
 
     def test_02_cookie_vault(self):
         """Verify Cookie Vault loads pre-authenticated sessions for GeM and CPPP portals."""

@@ -28,7 +28,7 @@ class TestLocalRAGEngine(unittest.TestCase):
         sensitive_text = """
         AWS_ACCESS_KEY_ID = AKIAIOSFODNN7EXAMPLE
         AWS_SECRET_ACCESS_KEY = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-        GEMINI_API_KEY = "AIzaSyDUMMY_KEY_FOR_TESTING_PURPOSES_ONLY_123"
+        DUMMY_API_KEY = "AIzaSyDUMMY_KEY_FOR_TESTING_PURPOSES_ONLY_123"
         Regular public code line here
         """
         result = check_confidentiality_and_motw(sensitive_text, ".env")

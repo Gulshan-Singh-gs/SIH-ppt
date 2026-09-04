@@ -7,7 +7,7 @@ Implements the flagship workflow:
 - AI understands: open browser, navigate to portal (GeM / CPPP)
 - Instant login: Injects pre-saved cookies via CookieVault (No password/OTP delays)
 - Autonomous Extraction: Scans page, extracts tender table data
-- Intelligent Synthesis: DualEngineLLM (Groq / Gemini / Local) summarizes key tenders
+- Intelligent Synthesis: Sovereign Local LLM Engine summarizes key tenders
 - Output: Clean executive intelligence report
 """
 import asyncio

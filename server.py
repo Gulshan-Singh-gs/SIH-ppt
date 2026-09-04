@@ -888,15 +888,14 @@ async def download_artifacts_zip():
     )
 
 
-@app.get("/api/groq_status")
-async def get_groq_status():
-    """Status endpoint for Groq/Gemini guardian."""
-    has_key = bool(llm_router.groq_api_key or llm_router.gemini_api_key)
+@app.get("/api/local_llm_status")
+async def get_local_llm_status():
+    """Status endpoint for sovereign local LLM engine."""
     return {
         "enabled": True,
-        "has_key": has_key,
-        "masked_key": "Active ($0 Free Tier Turbo)" if has_key else "Local Air-Gapped",
-        "model": "openai/gpt-oss-120b"
+        "has_key": False,
+        "masked_key": "100% Sovereign Local Air-Gapped",
+        "model": "llama3:latest"
     }
 
 
