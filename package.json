@@ -1,0 +1,14 @@
+{
+  "name": "sovereign-ppt-pdf-exporter",
+  "version": "1.0.0",
+  "description": "Exports Sovereign AI Workbench PPT to high-quality PDF",
+  "scripts": {
+    "export": "node export_pdf.js"
+  },
+  "dependencies": {
+    "puppeteer": "^22.15.0"
+  },
+  "allowScripts": {
+    "puppeteer@22.15.0": true
+  }
+}

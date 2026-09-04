@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sovereign Personal AI Assistant &bull; Smart Automation (SIH PSC26117)</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="alternate icon" href="/static/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=5.1">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="brand-icon">
+          <!-- Compass / Brain SVG Icon -->
+          <svg class="svg-icon lg" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <h1>Sovereign Personal Assistant <span class="tag-sih">SIH PSC26117</span></h1>
+          <p class="subtitle">Smart Automation for Everyday Work &bull; Runs 100% on your computer</p>
+        </div>
+      </div>
+
+      <!-- Live Status HUD -->
+      <div class="nav-controls">
+        <div class="hud-pill" id="status-pill">
+          <span class="dot-indicator"></span>
+          <span id="connection-status-text">Assistant: Connected</span>
+        </div>
+
+        <div class="hud-pill" id="brain-pill" title="Fast local assistant brain ready">
+          <!-- CPU / Brain SVG -->
+          <svg class="svg-icon sm" viewBox="0 0 24 24">
+            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+            <line x1="9" y1="9" x2="15" y2="9"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+            <line x1="10" y1="20" x2="10" y2="23"></line>
+            <line x1="14" y1="20" x2="14" y2="23"></line>
+          </svg>
+          <span id="engine-status-text">Brain: Ultra Fast ($0 Free)</span>
+        </div>
+
+        <div class="hud-pill clickable" id="btn-view-vault" title="View pre-saved website logins">
+          <!-- Key / Lock SVG -->
+          <svg class="svg-icon sm" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span id="vault-status-text">Instant Login: Active</span>
+        </div>
+
+        <a href="/portal/gem-tenders" target="_blank" class="hud-pill clickable" title="Open Simulated Government e-Marketplace Portal">
+          <!-- External Link SVG -->
+          <svg class="svg-icon sm" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span>Open GeM Portal</span>
+        </a>
+
+        <div class="hud-pill clickable" id="hud-toggle-assistant-frame" title="Toggle Assistant Response Frame">
+          <!-- Maximize / Frame SVG -->
+          <svg class="svg-icon sm" viewBox="0 0 24 24">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+          <span id="hud-toggle-text">Assistant Output</span>
+        </div>
+
+        <button id="btn-open-folder" class="btn-neumorph" title="Open output files in Windows Explorer">
+          <!-- Folder SVG -->
+          <svg class="svg-icon sm" viewBox="0 0 24 24">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>View Documents</span>
+        </button>
+
+        <button id="btn-theme-toggle" class="btn-neumorph" title="Toggle between Dark and Light Mode" style="padding: 8px 16px;">
+          <!-- Moon Icon for Dark Mode -->
+          <svg class="svg-icon sm" id="theme-icon-moon" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <!-- Sun Icon for Light Mode -->
+          <svg class="svg-icon sm" id="theme-icon-sun" style="display: none;" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <span id="theme-toggle-label">Dark Mode</span>
+        </button>
+
+        <button id="btn-open-settings" class="btn-neumorph primary" title="Control Deck &amp; AI Settings" style="padding: 8px 16px;">
+          <!-- Settings Gear SVG -->
+          <svg class="svg-icon sm" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Settings</span>
+        </button>
+
+        <div class="hud-pill clickable" id="nav-profile-pill" title="Profile &amp; Security Settings">
+          <div class="profile-avatar-circle" id="nav-profile-avatar-circle">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <span id="nav-profile-name">Senior Officer</span>
+          <span id="nav-lock-indicator" class="lock-dot unlocked" title="Workspace Unlocked"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Privacy & Security Assurance Banner -->
+    <div class="privacy-banner">
+      <div class="privacy-info">
+        <!-- Shield Check SVG -->
+        <svg class="svg-icon" style="color: var(--emerald);" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <polyline points="9 12 11 14 15 10"></polyline>
+        </svg>
+        <div>
+          <strong>Privacy &amp; Security Guard: Active</strong>
+          <span>Your files and personal records are processed 100% on this computer. Zero data is uploaded to external servers.</span>
+        </div>
+      </div>
+      <span class="tag-sih" style="color: var(--emerald);">Data Sovereignty Verified</span>
+    </div>
+
+    <!-- Flagship One-Click Action Bar -->
+    <div class="action-hero-bar">
+      <div class="hero-text">
+        <strong>Flagship Workflow: Autonomous Public Portal Tender Intelligence</strong>
+        <p>Type what you want in plain English &bull; Browser robot uses pre-saved login &bull; Extracts notices &bull; Creates clean report</p>
+      </div>
+      <button id="btn-run-tender" class="btn-neumorph primary">
+        <!-- Play SVG -->
+        <svg class="svg-icon" viewBox="0 0 24 24">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <span>"Check today's tender updates on government portal"</span>
+      </button>
+    </div>
+
+    <!-- Dedicated Toggleable Assistant Output Frame -->
+    <div class="assistant-frame-wrapper" id="assistant-frame-wrapper" style="display: none;">
+      <div class="assistant-frame-card">
+        <div class="assistant-frame-header">
+          <div class="assistant-frame-title">
+            <svg class="svg-icon" style="color: var(--acc);" viewBox="0 0 24 24">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <h3 id="assistant-frame-heading">Assistant Response</h3>
+            <span class="tag-sih" style="color: var(--emerald);">Generated Locally &bull; Verified</span>
+          </div>
+          <div class="assistant-frame-actions">
+            <button class="btn-neumorph" id="btn-copy-assistant-output" style="padding: 5px 12px; font-size: 11.5px;">
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Copy</span>
+            </button>
+            <button class="btn-neumorph" id="btn-toggle-assistant-frame" style="padding: 5px 12px; font-size: 11.5px;">
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <span>Close</span>
+            </button>
+          </div>
+        </div>
+        <div class="assistant-frame-body" id="assistant-frame-content">
+          <!-- Cleanly formatted HTML output with zero markdown characters -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard-grid">
+
+      <!-- Left Column: Instructions & Folder Helper -->
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <!-- Command SVG -->
+            <svg class="svg-icon" viewBox="0 0 24 24">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <h2>What would you like me to do?</h2>
+          </div>
+        </div>
+
+        <!-- Drag & Drop / Folder Ingestion Box -->
+        <div class="dropzone" id="folder-dropzone" title="Click or drop files to upload to local workspace">
+          <input type="file" id="file-input" multiple style="display: none;">
+          <div class="dropzone-icon">
+            <!-- Upload / Folder Arrow SVG -->
+            <svg class="svg-icon" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <p>Drag &amp; drop files, spreadsheets, or folders here, or click to browse</p>
+          <span>Your assistant reads files locally to answer questions and help your team</span>
+        </div>
+
+        <!-- Plain English Prompt Input -->
+        <div class="input-well">
+          <textarea id="prompt-input" class="prompt-area" rows="4" placeholder="Type your instruction in plain English... (e.g. Check today's government tenders, or read my folder and explain what it does)"></textarea>
+        </div>
+
+        <!-- Sample Commands for Non-Technical Users -->
+        <div class="sample-commands">
+          <span class="sample-title">Quick Tasks (Click to load):</span>
+          <div class="command-pills">
+            <button class="pill-btn" data-query="Check today's tender updates on the government portal">Check Government Tenders</button>
+            <button class="pill-btn" data-query="Process multi-page tender scan with Dual-Engine OCR">Scanned Tender (Dual Engine OCR)</button>
+            <button class="pill-btn" data-query="Read my project folder and explain what it does in simple words">Explain My Project Folder</button>
+            <button class="pill-btn" data-query="Draft a simple one-page tender proposal letter">Draft Proposal Letter</button>
+            <button class="pill-btn" data-query="Verify my pre-saved website logins to make sure they are active">Check Saved Logins</button>
+          </div>
+        </div>
+
+        <!-- Execution Control Buttons -->
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: auto;">
+          <button id="btn-stop" class="btn-neumorph danger" disabled>
+            <!-- Stop Square SVG -->
+            <svg class="svg-icon sm" viewBox="0 0 24 24">
+              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+            </svg>
+            <span>Stop</span>
+          </button>
+
+          <button id="btn-execute" class="btn-neumorph primary">
+            <!-- Send Arrow SVG -->
+            <svg class="svg-icon sm" viewBox="0 0 24 24">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>Ask Assistant</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Right Column: Live Telemetry & Interactive Suggestions -->
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <!-- Activity Pulse SVG -->
+            <svg class="svg-icon" viewBox="0 0 24 24">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <h2>Assistant Activity & Suggestions</h2>
+          </div>
+          <button id="btn-clear-logs" class="btn-neumorph" style="padding: 4px 12px; font-size: 11px;">Clear</button>
+        </div>
+
+        <!-- Progressive Status Card -->
+        <div class="progress-card" id="progress-card">
+          <div class="progress-header">
+            <span id="progress-status-label">Assistant Status: Idle &bull; Ready for tasks</span>
+            <span id="progress-percent-label">0%</span>
+          </div>
+          <div class="ptrack">
+            <div class="pfill" id="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Live Activity Logs -->
+        <div class="console-well" id="console-logs">
+          <div class="log-entry">
+            <span class="log-time">Now</span>
+            <span class="log-tag system">READY</span>
+            <span class="log-text">Sovereign Personal Assistant is ready. Click "Check today's tender updates" or drop a folder to get started.</span>
+          </div>
+        </div>
+
+        <!-- Interactive Proactive Questions Box -->
+        <div class="inquiry-box" id="inquiry-container">
+          <h3>
+            <!-- Sparkles / Lightbulb SVG -->
+            <svg class="svg-icon sm" style="color: var(--acc);" viewBox="0 0 24 24">
+              <line x1="9" y1="18" x2="15" y2="18"></line>
+              <line x1="10" y1="22" x2="14" y2="22"></line>
+              <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+            </svg>
+            <span>Helpful Next Steps For You</span>
+          </h3>
+          <div class="inquiry-list" id="inquiry-list">
+            <div class="inquiry-item" data-action="tender">
+              <span>Would you like me to check today's live tender updates on the government portal?</span>
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <div class="inquiry-item" data-action="explain">
+              <span>Would you like a one-page non-technical summary of your workspace files?</span>
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <div class="inquiry-item" data-action="vault">
+              <span>Shall I verify that all your pre-saved government website logins are working?</span>
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Tender Report Modal -->
+    <div class="modal-backdrop" id="tender-report-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Executive Tender Intelligence Briefing</h2>
+          <button class="btn-neumorph" id="btn-close-report" style="padding: 6px 14px;">Close</button>
+        </div>
+        <div class="modal-body" id="modal-report-body">
+          <div id="report-structured-view"></div>
+          <textarea id="report-raw-content" style="display: none;"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-neumorph" id="btn-copy-report">Copy Briefing</button>
+          <button class="btn-neumorph primary" id="btn-download-report">Download Report (.md)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cookie Vault Sessions Modal -->
+    <div class="modal-backdrop" id="vault-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Pre-Saved Website Logins (Cookie Vault)</h2>
+          <button class="btn-neumorph" id="btn-close-vault" style="padding: 6px 14px;">Close</button>
+        </div>
+        <div class="modal-body" id="vault-sessions-list">
+          <p>Loading saved sessions...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents & Uploaded Files Hub Modal -->
+    <div class="modal-backdrop" id="documents-modal">
+      <div class="modal-card" style="max-width: 920px;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg class="svg-icon" style="color: var(--acc);" viewBox="0 0 24 24">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <div>
+              <h2 style="margin: 0; font-size: 16px;">Documents &amp; Uploaded Files Hub</h2>
+              <span style="font-size: 11.5px; color: var(--muted); font-weight: 500;">
+                All files stored locally on this computer (output/uploads/) &bull; Zero Cloud Upload
+              </span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-neumorph" id="btn-open-explorer-hub" title="Open this folder in Windows Explorer" style="padding: 6px 14px; font-size: 12px;">
+              <svg class="svg-icon sm" viewBox="0 0 24 24">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>Windows Explorer</span>
+            </button>
+            <button class="btn-neumorph" id="btn-close-documents" style="padding: 6px 14px; font-size: 12px;">Close</button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="doc-tab-bar">
+          <button class="doc-tab-btn active" id="tab-btn-uploads">
+            <span>Uploaded Files</span>
+            <span class="doc-badge" id="count-uploaded-badge">0</span>
+          </button>
+          <button class="doc-tab-btn" id="tab-btn-specs">
+            <span>Project Specifications (13)</span>
+          </button>
+        </div>
+
+        <div class="modal-body" style="gap: 16px;">
+          <!-- Uploaded Files Section -->
+          <div id="view-uploads-panel">
+            <!-- Batch Toolbar -->
+            <div class="doc-batch-bar" id="doc-batch-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; margin-bottom: 12px; border-radius: var(--r-tile); background: var(--card-tint); border: 1px solid var(--line);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink);">
+                  <input type="checkbox" id="check-select-all-files" style="cursor: pointer; width: 16px; height: 16px;">
+                  <span>Select All</span>
+                </label>
+                <span id="selected-files-count" style="font-size: 11.5px; color: var(--muted);">(0 selected)</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-neumorph" id="btn-batch-zip" disabled style="padding: 5px 12px; font-size: 11.5px;">
+                  <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>Download Selected</span>
+                </button>
+                <button class="btn-neumorph danger" id="btn-batch-delete" disabled style="padding: 5px 12px; font-size: 11.5px;">
+                  <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <span>Delete Selected</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="uploaded-files-list" class="doc-files-grid">
+              <div class="doc-empty-state">Loading files...</div>
+            </div>
+          </div>
+
+          <!-- Project Specs Section -->
+          <div id="view-specs-panel" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span style="font-size: 12.5px; color: var(--muted);">13 Complete SDLC Engineering Specifications for Smart Automation</span>
+              <a href="/api/download_zip" class="btn-neumorph primary" style="padding: 6px 14px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Download All (ZIP)</span>
+              </a>
+            </div>
+            <div id="specs-files-list" class="doc-files-grid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11.5px; color: var(--muted);">
+            Files are saved to <code>output/uploads/</code> for on-premise privacy.
+          </span>
+          <button class="btn-neumorph" id="btn-refresh-files" style="padding: 6px 14px; font-size: 12px;">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Control & Intelligence Settings Slide-Over Drawer Frame -->
+    <div class="drawer-backdrop" id="settings-modal">
+      <div class="drawer-frame" id="settings-drawer-frame">
+        <div class="drawer-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="brand-icon" style="width: 38px; height: 38px;">
+              <svg class="svg-icon sm" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 style="margin: 0; font-size: 16px;">Control Deck &amp; System Settings</h2>
+              <span style="font-size: 11.5px; color: var(--muted); font-weight: 500;">
+                Sovereign Air-Gapped AI &bull; Hardware Tailored &bull; Zero Cloud Leakage
+              </span>
+            </div>
+          </div>
+          <button class="btn-neumorph" id="btn-close-settings" style="padding: 6px 14px; font-size: 12px;">Close</button>
+        </div>
+
+        <!-- Settings Navigation Tabs -->
+        <div class="doc-tab-bar" style="border-bottom: 1px solid var(--line);">
+          <button class="doc-tab-btn active" id="tab-btn-settings-ollama">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+            <span>Local AI</span>
+          </button>
+          <button class="doc-tab-btn" id="tab-btn-settings-profile">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profile Vault</span>
+          </button>
+          <button class="doc-tab-btn" id="tab-btn-settings-dual">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+            <span>Dual Engine</span>
+          </button>
+          <button class="doc-tab-btn" id="tab-btn-settings-security">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>Air-Gap</span>
+          </button>
+        </div>
+
+        <div class="drawer-body" style="padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Panel 1: Local AI & Ollama Model Manager -->
+          <div id="panel-settings-ollama">
+            <!-- Hardware Profile Telemetry Card -->
+            <div class="settings-hardware-card" id="settings-hardware-card" style="padding: 16px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="tag-sih" style="color: var(--acc);">Device Hardware Auto-Detected</span>
+                  <strong id="hw-os-label" style="font-size: 13px; color: var(--ink);">Windows 64-bit</strong>
+                </div>
+                <div id="hw-ollama-status-badge" class="tag-sih" style="color: var(--emerald);">Ollama Engine Ready</div>
+              </div>
+              <div class="metrics-quad" style="margin-bottom: 0;">
+                <div class="metric-tile">
+                  <span class="metric-label">System RAM</span>
+                  <div class="metric-value" id="hw-ram-val">Loading...</div>
+                  <span class="metric-sub" id="hw-ram-sub">Target for Model Allocations</span>
+                </div>
+                <div class="metric-tile">
+                  <span class="metric-label">CPU Cores</span>
+                  <div class="metric-value" id="hw-cpu-val">Loading...</div>
+                  <span class="metric-sub">Logical Worker Threads</span>
+                </div>
+                <div class="metric-tile">
+                  <span class="metric-label">Free Storage</span>
+                  <div class="metric-value" id="hw-disk-val">Loading...</div>
+                  <span class="metric-sub">On Main Local Drive</span>
+                </div>
+                <div class="metric-tile">
+                  <span class="metric-label">Active in Memory</span>
+                  <div class="metric-value" id="hw-active-model-val" style="font-size: 13px; font-weight: 700; color: var(--acc);">Internal Engine</div>
+                  <button class="btn-neumorph danger" id="btn-unload-model-ram" style="margin-top: 6px; padding: 3px 8px; font-size: 11px; width: 100%;">Unload from RAM</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Download Telemetry Banner -->
+            <div class="settings-pull-box" id="settings-pull-box" style="display: none; margin-top: 14px; padding: 14px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--acc);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong id="pull-model-name" style="font-size: 13px; color: var(--ink);">Downloading Model...</strong>
+                <span id="pull-stats" style="font-size: 12px; font-weight: 600; color: var(--acc);">0% • 0 MB</span>
+              </div>
+              <div class="ptrack" style="margin-bottom: 10px;">
+                <div class="pfill" id="pull-bar-fill" style="width: 0%;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="pull-status-msg" style="font-size: 11.5px; color: var(--muted);">Connecting to Ollama layers...</span>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn-neumorph" id="btn-pull-pause" style="padding: 4px 10px; font-size: 11px;">Pause</button>
+                  <button class="btn-neumorph danger" id="btn-pull-cancel" style="padding: 4px 10px; font-size: 11px;">Cancel</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Models Catalog Section -->
+            <div style="margin-top: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 14px; font-weight: 700; color: var(--ink);">Curated Models (Ranked for Your Device)</h3>
+                <span style="font-size: 11.5px; color: var(--muted);">Click any model to download or switch</span>
+              </div>
+              <div class="models-catalog-grid" id="models-catalog-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 2: Profile & Password Vault -->
+          <div id="panel-settings-profile" style="display: none;">
+            <div style="display: grid; grid-template-columns: 240px 1fr; gap: 20px;">
+              <!-- Left: Avatar Selector -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line);">
+                <div class="profile-avatar-circle lg" id="profile-avatar-preview" style="width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: rgba(91, 108, 249, 0.12); color: var(--acc); border: 2px solid var(--acc); cursor: pointer; overflow: hidden; position: relative;" title="Click to upload custom profile photo">
+                  <svg class="svg-icon xl" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <strong id="profile-display-name" style="font-size: 14px; color: var(--ink);">Senior Officer</strong>
+                <span id="profile-display-role" style="font-size: 12px; color: var(--muted);">Executive Administrator</span>
+
+                <input type="file" id="input-avatar-file" accept="image/*" style="display: none;">
+                <div style="width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                  <button class="btn-neumorph" id="btn-upload-avatar" style="width: 100%; font-size: 11.5px; padding: 6px; justify-content: center; gap: 6px;" title="Upload custom image file from your computer">
+                    <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <span>Upload Custom Photo</span>
+                  </button>
+                  <button class="btn-neumorph danger" id="btn-reset-avatar" style="display: none; width: 100%; font-size: 11px; padding: 4px; justify-content: center;">
+                    <span>Reset Photo</span>
+                  </button>
+                </div>
+
+                <div style="width: 100%; border-top: 1px solid var(--line); margin: 6px 0; padding-top: 10px;">
+                  <span style="font-size: 11.5px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 8px; text-align: center;">Avatar Selection:</span>
+                  <div style="display: flex; justify-content: center; gap: 8px;" id="avatar-preset-picker">
+                    <button class="btn-neumorph avatar-opt selected" data-preset="avatar_1" title="Officer Preset">
+                      <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </button>
+                    <button class="btn-neumorph avatar-opt" data-preset="avatar_2" title="Security Officer">
+                      <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </button>
+                    <button class="btn-neumorph avatar-opt" data-preset="avatar_3" title="Executive Lead">
+                      <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    </button>
+                    <button class="btn-neumorph avatar-opt" data-preset="avatar_4" title="Audit Specialist">
+                      <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <button class="btn-neumorph danger" id="btn-lock-screen-now" style="width: 100%; margin-top: 8px; font-size: 12px; padding: 8px; justify-content: center;">
+                  <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span>Lock Workspace</span>
+                </button>
+              </div>
+
+              <!-- Right: Name & Password Form -->
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="input-profile-name">
+                    <span>Officer Name</span>
+                    <span style="font-size: 10.5px; text-transform: none; color: var(--mut);">Workstation Identification</span>
+                  </label>
+                  <div class="input-well">
+                    <svg class="svg-icon sm" style="color: var(--acc); flex-shrink: 0;" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="text" id="input-profile-name" class="prompt-area" placeholder="e.g. Officer Sharma">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="input-profile-role">
+                    <span>Department / Role</span>
+                    <span style="font-size: 10.5px; text-transform: none; color: var(--mut);">Organizational Designation</span>
+                  </label>
+                  <div class="input-well">
+                    <svg class="svg-icon sm" style="color: var(--acc); flex-shrink: 0;" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    <input type="text" id="input-profile-role" class="prompt-area" placeholder="e.g. Senior Procurement Lead">
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end;">
+                  <button class="btn-neumorph primary" id="btn-save-profile-details" style="padding: 8px 18px; font-size: 12.5px;">
+                    <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Save Profile Details</span>
+                  </button>
+                </div>
+
+                <!-- Password Protection Vault Box -->
+                <div style="padding: 16px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line); margin-top: 2px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div>
+                      <strong style="font-size: 13px; color: var(--ink);">Workspace Password Protection</strong>
+                      <p style="font-size: 11.5px; color: var(--muted); margin-top: 2px;">Locks the workbench upon startup or when left unattended.</p>
+                    </div>
+                    <span id="password-status-badge" class="tag-sih" style="color: var(--muted);">Not Set</span>
+                  </div>
+
+                  <div id="password-setup-form" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                      <div class="form-group">
+                        <label class="form-label" for="input-new-password">New PIN / Password</label>
+                        <div class="input-well">
+                          <svg class="svg-icon sm" style="color: var(--acc); flex-shrink: 0;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                          <input type="password" id="input-new-password" class="prompt-area" placeholder="Min 4 chars / PIN">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="input-confirm-password">Confirm Password</label>
+                        <div class="input-well">
+                          <svg class="svg-icon sm" style="color: var(--acc); flex-shrink: 0;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                          <input type="password" id="input-confirm-password" class="prompt-area" placeholder="Re-enter password">
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                      <button class="btn-neumorph danger" id="btn-remove-password" style="display: none; padding: 6px 14px; font-size: 12px;">Remove Password</button>
+                      <button class="btn-neumorph primary" id="btn-save-password" style="padding: 6px 16px; font-size: 12px;">Set Password</button>
+                    </div>
+                  </div>
+
+                  <!-- 16-Char Master Recovery Key Display Box -->
+                  <div id="recovery-key-display-box" style="display: none; margin-top: 14px; padding: 12px; border-radius: var(--r-tile); background: rgba(91, 108, 249, 0.08); border: 1px dashed var(--acc);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <strong style="font-size: 12px; color: var(--acc);">Your Sovereign Master Recovery Key</strong>
+                        <p style="font-size: 11px; color: var(--muted);">Write this down in a secure place. It allows you to reset your password without internet.</p>
+                      </div>
+                      <button class="btn-neumorph" id="btn-copy-recovery-key" style="padding: 4px 10px; font-size: 11px;">Copy Key</button>
+                    </div>
+                    <div id="recovery-key-text" style="margin-top: 8px; font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: 2px;">SOV-XXXX-XXXX-XXXX</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 3: Dual Working Engine -->
+          <div id="panel-settings-dual" style="display: none;">
+            <div style="padding: 16px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line);">
+              <strong style="font-size: 13.5px; color: var(--ink);">Dual Working Engine Workload Partitioning</strong>
+              <p style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 16px;">
+                Splits document parsing, OCR preprocessing, and data calculations across both your Client Browser (IndexedDB/Web Workers) and the Local Python Server process.
+              </p>
+
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px;" id="dual-engine-options">
+                <div class="dual-option-card selected" data-ratio="50_50" style="padding: 14px; border-radius: var(--r-tile); background: var(--bg); border: 2px solid var(--acc); cursor: pointer;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <strong style="font-size: 13px; color: var(--ink);">Balanced (50 / 50)</strong>
+                    <span class="tag-sih" style="color: var(--emerald);">Default</span>
+                  </div>
+                  <p style="font-size: 11.5px; color: var(--muted);">Splits large multi-hundred-page OCR scans and document jobs equally between client and local server.</p>
+                </div>
+                <div class="dual-option-card" data-ratio="server_only" style="padding: 14px; border-radius: var(--r-tile); background: var(--bg); border: 1px solid var(--line); cursor: pointer;">
+                  <div style="margin-bottom: 6px;">
+                    <strong style="font-size: 13px; color: var(--ink);">Server-Only (100%)</strong>
+                  </div>
+                  <p style="font-size: 11.5px; color: var(--muted);">All OCR and document parsing executes in background Python processes for maximum battery preservation.</p>
+                </div>
+                <div class="dual-option-card" data-ratio="browser_only" style="padding: 14px; border-radius: var(--r-tile); background: var(--bg); border: 1px solid var(--line); cursor: pointer;">
+                  <div style="margin-bottom: 6px;">
+                    <strong style="font-size: 13px; color: var(--ink);">Browser-Only (100%)</strong>
+                  </div>
+                  <p style="font-size: 11.5px; color: var(--muted);">Runs lightweight documents entirely inside browser Web Workers without server compute.</p>
+                </div>
+              </div>
+
+              <!-- Engine Status Health Indicators -->
+              <div style="display: flex; gap: 24px; border-top: 1px solid var(--line); padding-top: 14px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="dot-indicator" style="background: var(--emerald);"></span>
+                  <span style="font-size: 12.5px; font-weight: 600; color: var(--ink);">Engine A (Client Browser):</span>
+                  <span style="font-size: 12px; color: var(--muted);">IndexedDB Active</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="dot-indicator" style="background: var(--emerald);"></span>
+                  <span style="font-size: 12.5px; font-weight: 600; color: var(--ink);">Engine B (Python Server):</span>
+                  <span style="font-size: 12px; color: var(--muted);">Port 8001 Running</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 4: Air-Gap & Security Alerts -->
+          <div id="panel-settings-security" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- Air-Gap Network Kill Switch -->
+              <div style="padding: 16px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <strong style="font-size: 13.5px; color: var(--ink);">Hardware Air-Gap Network Kill Switch</strong>
+                      <span id="kill-switch-badge" class="tag-sih" style="color: var(--muted);">Disabled</span>
+                    </div>
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+                      When enabled, server strictly blocks all non-localhost outgoing network requests. Assures 100% data sovereignty.
+                    </p>
+                  </div>
+                  <button class="btn-neumorph" id="btn-toggle-kill-switch" style="padding: 8px 16px; font-size: 12px;">Enable Kill Switch</button>
+                </div>
+              </div>
+
+              <!-- Cookie Vault Expiration Alerts -->
+              <div style="padding: 16px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong style="font-size: 13.5px; color: var(--ink);">Cookie Vault Session Expiration Alerts</strong>
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+                      Alert when saved government procurement portal session tokens are expiring soon.
+                    </p>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn-neumorph primary" id="btn-test-all-logins" style="padding: 6px 14px; font-size: 12px;">Test All Saved Logins</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Air-Gapped Session Lock Screen Modal -->
+    <div class="modal-backdrop" id="lock-screen-modal" style="z-index: 9999;">
+      <div class="modal-card" style="max-width: 440px; text-align: center; padding: 32px 24px;">
+        <div class="profile-avatar-circle lg" id="lock-avatar-preview" style="width: 64px; height: 64px; margin: 0 auto 14px auto; border-radius: 50%; display: grid; place-items: center; background: rgba(91, 108, 249, 0.12); color: var(--acc); border: 2px solid var(--acc);">
+          <svg class="svg-icon xl" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <h2 id="lock-user-name" style="font-size: 18px; margin-bottom: 4px;">Workspace Locked</h2>
+        <span style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 20px;">Enter your PIN or password to unlock</span>
+
+        <div class="input-well" style="margin-bottom: 14px;">
+          <svg class="svg-icon sm" style="color: var(--acc); flex-shrink: 0;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <input type="password" id="input-lock-password" class="prompt-area" style="text-align: center; font-size: 15px; letter-spacing: 2px;" placeholder="Password / PIN">
+        </div>
+        <div id="lock-error-msg" style="color: var(--rose); font-size: 12px; margin-bottom: 12px; display: none;"></div>
+
+        <button class="btn-neumorph primary" id="btn-submit-unlock" style="width: 100%; padding: 10px; font-size: 13px; justify-content: center; margin-bottom: 14px;">
+          Unlock Workspace
+        </button>
+
+        <div style="border-top: 1px solid var(--line); padding-top: 12px;">
+          <button class="btn-neumorph" id="btn-show-forgot-password" style="font-size: 11.5px; padding: 4px 10px; background: transparent; box-shadow: none;">Forgot Password?</button>
+        </div>
+
+        <!-- Forgot Password Recovery Panel -->
+        <div id="lock-recovery-panel" style="display: none; margin-top: 14px; text-align: left; padding: 14px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px dashed var(--line);">
+          <strong style="font-size: 12px; color: var(--ink);">Sovereign Recovery (Zero Cloud)</strong>
+          <p style="font-size: 11px; color: var(--muted); margin-top: 2px; margin-bottom: 10px;">Enter your 16-character Master Recovery Key and set a new password:</p>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" for="input-recovery-key">Master Recovery Key</label>
+            <div class="input-well">
+              <svg class="svg-icon sm" style="color: var(--acc); flex-shrink: 0;" viewBox="0 0 24 24"><path d="M21 2l-2 2m-1.5 1.5L14 9a5 5 0 1 0 4 4l3.5-3.5"></path></svg>
+              <input type="text" id="input-recovery-key" class="prompt-area" style="font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 1px;" placeholder="SOV-XXXX-XXXX-XXXX">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" for="input-recovery-new-password">New Password</label>
+            <div class="input-well">
+              <svg class="svg-icon sm" style="color: var(--acc); flex-shrink: 0;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <input type="password" id="input-recovery-new-password" class="prompt-area" placeholder="New PIN / Password">
+            </div>
+          </div>
+          <button class="btn-neumorph primary" id="btn-submit-recovery" style="width: 100%; padding: 8px; font-size: 12px; justify-content: center; margin-bottom: 10px;">
+            Reset &amp; Unlock
+          </button>
+
+          <div style="text-align: center; border-top: 1px solid var(--line); padding-top: 8px;">
+            <button class="btn-neumorph" id="btn-unlock-physical" style="font-size: 11px; padding: 4px 8px; width: 100%;" title="Uses local workstation security token">
+              Unlock via Local Workstation File
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/app.js?v=5.1"></script>
+</body>
+</html>

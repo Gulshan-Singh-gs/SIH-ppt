@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <title>Sovereign On-Premise Agentic AI Workbench · SIH PSC26117</title>
+    <style>
+        /* ─── Google Font ─── */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        :root {
+            --bg: #e4e9f2;
+            --shadow-dark: #c8cfdc;
+            --shadow-light: #ffffff;
+            --shadow-raised: 7px 7px 14px var(--shadow-dark), -7px -7px 14px var(--shadow-light);
+            --shadow-raised-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            --shadow-inset: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            --shadow-pressed: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            --radius-card: 18px;
+            --radius-tile: 14px;
+            --radius-pill: 999px;
+            --accent: #5b6cf9;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --heading: #333a52;
+            --body: #5a6178;
+            --muted: #7b839c;
+            --connector: #b9c0d4;
+            --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --slide-margin: clamp(24px, 4vw, 56px);
+            --spacing: 8px;
+            /* per-slide accent (overridden via JS) */
+            --slide-accent: var(--accent);
+        }
+        html, body {
+            background: var(--bg);
+            color: var(--body);
+            font-family: var(--font);
+            font-weight: 400;
+            line-height: 1.45;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ─── slide container ─── */
+        .deck {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: transparent;
+        }
+        .slides-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: var(--slide-margin);
+            padding-bottom: calc(var(--slide-margin) + 68px);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            background: transparent;
+            box-sizing: border-box;
+        }
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+        .slide::-webkit-scrollbar { display: none; }
+
+        /* ─── slide inner content wrapper ─── */
+        .slide-content {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+            max-height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            padding: 16px 20px;
+            box-sizing: border-box;
+        }
+        .slide-content::-webkit-scrollbar { display: none; }
+
+        /* ─── typography ─── */
+        h1 {
+            font-size: clamp(1.8rem, 5.5vw, 3.4rem);
+            font-weight: 800;
+            color: var(--heading);
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+        }
+        h2 {
+            font-size: clamp(1.3rem, 3.5vw, 2.2rem);
+            font-weight: 700;
+            color: var(--heading);
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+            margin-bottom: 0.2em;
+        }
+        h3 {
+            font-size: clamp(0.95rem, 2vw, 1.3rem);
+            font-weight: 600;
+            color: var(--heading);
+            line-height: 1.3;
+        }
+        .subtitle {
+            font-size: clamp(0.92rem, 1.7vw, 1.25rem);
+            font-weight: 400;
+            color: var(--body);
+            margin-top: 0.2em;
+        }
+        .body-text {
+            font-size: clamp(0.8rem, 1.35vw, 1rem);
+            font-weight: 400;
+            color: var(--body);
+            line-height: 1.5;
+        }
+        .muted-text {
+            color: var(--muted);
+            font-size: clamp(0.68rem, 1.05vw, 0.87rem);
+            font-weight: 400;
+        }
+        .accent-text { color: var(--slide-accent); font-weight: 500; }
+
+        /* ─── cards, tiles, pills ─── */
+        .card {
+            background: rgba(228, 233, 242, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.72);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-raised);
+            padding: clamp(12px, 2vw, 24px);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .tile {
+            background: rgba(228, 233, 242, 0.84);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.68);
+            border-radius: var(--radius-tile);
+            box-shadow: var(--shadow-raised-sm);
+            padding: clamp(10px, 1.4vw, 18px);
+        }
+        .tile-inset {
+            background: rgba(228, 233, 242, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(200, 207, 220, 0.4);
+            border-radius: var(--radius-tile);
+            box-shadow: var(--shadow-inset);
+            padding: clamp(8px, 1.2vw, 16px);
+        }
+        .pill {
+            background: rgba(228, 233, 242, 0.90);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.72);
+            border-radius: var(--radius-pill);
+            box-shadow: var(--shadow-raised-sm);
+            padding: 6px 16px;
+            font-size: clamp(0.68rem, 1.05vw, 0.88rem);
+            color: var(--heading);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon-holder {
+            width: clamp(36px, 4vw, 52px);
+            height: clamp(36px, 4vw, 52px);
+            border-radius: 50%;
+            background: var(--bg);
+            box-shadow: var(--shadow-raised);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: box-shadow 0.2s;
+        }
+        .icon-holder svg {
+            width: 48%;
+            height: 48%;
+            stroke: var(--slide-accent);
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            transition: stroke 0.3s;
+        }
+        .icon-holder-sm {
+            width: clamp(26px, 2.8vw, 38px);
+            height: clamp(26px, 2.8vw, 38px);
+            border-radius: 50%;
+            background: var(--bg);
+            box-shadow: var(--shadow-raised-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-holder-sm svg {
+            width: 50%;
+            height: 50%;
+            stroke: var(--slide-accent);
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            transition: stroke 0.3s;
+        }
+
+        /* ─── navigation ─── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(200, 207, 220, 0.4);
+            z-index: 1000;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--slide-accent);
+            width: 0%;
+            transition: width 0.35s ease, background 0.4s ease;
+        }
+        .slide-counter {
+            position: fixed;
+            bottom: clamp(14px, 2.5vw, 22px);
+            right: clamp(16px, 3vw, 30px);
+            background: rgba(228, 233, 242, 0.90);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: var(--shadow-raised-sm);
+            border-radius: var(--radius-pill);
+            padding: 5px 14px;
+            font-size: clamp(0.68rem, 0.95vw, 0.84rem);
+            font-weight: 700;
+            color: var(--heading);
+            z-index: 999;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        /* Bottom-docked navigation bar */
+        .bottom-nav-bar {
+            position: fixed;
+            bottom: clamp(12px, 2.5vw, 22px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 999;
+            background: rgba(228, 233, 242, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
+            box-shadow: var(--shadow-raised);
+            border: 1px solid rgba(255,255,255,0.72);
+            transition: background 0.3s;
+        }
+        .nav-btn {
+            position: static;
+            transform: none;
+            width: clamp(34px, 3.6vw, 42px);
+            height: clamp(34px, 3.6vw, 42px);
+            border-radius: 50%;
+            background: var(--bg);
+            box-shadow: var(--shadow-raised-sm);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.2s, transform 0.15s;
+        }
+        .nav-btn:hover { box-shadow: var(--shadow-pressed); transform: translateY(-1px); }
+        .nav-btn:active { box-shadow: var(--shadow-pressed); transform: scale(0.92); }
+        .nav-btn svg {
+            width: 45%;
+            height: 45%;
+            stroke: var(--heading);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .nav-slide-title {
+            font-size: clamp(0.62rem, 0.88vw, 0.78rem);
+            font-weight: 600;
+            color: var(--muted);
+            padding: 0 6px;
+            max-width: clamp(100px, 18vw, 220px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        /* ─── edge click zones ─── */
+        .edge-zone {
+            position: fixed;
+            top: 0;
+            height: calc(100% - 80px);
+            width: 15%;
+            z-index: 998;
+            cursor: pointer;
+            background: transparent;
+        }
+        .edge-zone.left { left: 0; }
+        .edge-zone.right { right: 0; }
+
+        /* ─── utility ─── */
+        .flex-row { display: flex; flex-wrap: wrap; gap: clamp(8px,1.5vw,16px); align-items: center; }
+        .flex-col { display: flex; flex-direction: column; gap: clamp(6px,1vw,12px); }
+        .gap-sm { gap: clamp(4px,0.8vw,10px); }
+        .gap-md { gap: clamp(10px,1.8vw,20px); }
+        .gap-lg { gap: clamp(16px,2.5vw,32px); }
+        .mt-1 { margin-top: clamp(6px,1vw,12px); }
+        .mt-2 { margin-top: clamp(12px,2vw,24px); }
+        .mt-3 { margin-top: clamp(20px,3vw,38px); }
+        .mb-1 { margin-bottom: clamp(6px,1vw,12px); }
+        .mb-2 { margin-bottom: clamp(12px,2vw,24px); }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .flex-1 { flex: 1; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px,1.8vw,20px); }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: clamp(8px,1.4vw,16px); }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: clamp(6px,1vw,14px); }
+        @media (max-width: 720px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 480px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+
+        /* ─── arrow connector ─── */
+        .arrow-connector { display:flex; align-items:center; justify-content:center; color:var(--connector); font-size: clamp(1.2rem,2.5vw,2.2rem); font-weight: 300; padding: 0 4px; }
+
+        /* ─── check item ─── */
+        .check-item { display:flex; align-items:flex-start; gap: clamp(8px,1.2vw,14px); }
+        .check-item .check-icon { width: clamp(18px,2.2vw,26px); height: clamp(18px,2.2vw,26px); border-radius:50%; background:var(--bg); box-shadow:var(--shadow-raised-sm); flex-shrink:0; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+        .check-item .check-icon svg { width:55%; height:55%; stroke:var(--slide-accent); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; fill:none; }
+
+        /* ─── stat tile ─── */
+        .stat-tile { background:var(--bg); border-radius:var(--radius-tile); box-shadow:var(--shadow-inset); padding: clamp(10px,1.4vw,18px); text-align:center; }
+        .stat-tile .number { font-size: clamp(1.3rem,3vw,2.4rem); font-weight:800; color:var(--slide-accent); line-height:1.1; }
+        .stat-tile .label { font-size: clamp(0.54rem,0.88vw,0.74rem); color:var(--muted); font-weight:400; margin-top:4px; line-height: 1.3; }
+
+        /* ─── comparison row ─── */
+        .comp-row { display:grid; grid-template-columns:1fr auto 1fr; gap: clamp(6px,1vw,14px); align-items:center; padding: clamp(4px,0.6vw,8px) 0; border-bottom:1px solid rgba(200,207,220,0.3); }
+        .comp-row:last-child { border-bottom:none; }
+        .comp-row .vs { color:var(--connector); font-weight:300; font-size: clamp(0.7rem,1.2vw,1rem); }
+
+        /* ─── chips ─── */
+        .chip-group { display:flex; flex-wrap:wrap; gap: clamp(4px,0.8vw,10px); }
+        .chip { background:var(--bg); box-shadow:var(--shadow-raised-sm); border-radius:var(--radius-pill); padding:4px 14px; font-size: clamp(0.55rem,0.9vw,0.75rem); font-weight:500; color:var(--body); transition: box-shadow 0.2s; border:none; cursor:default; }
+        .chip.accent { color:var(--slide-accent); }
+        .chip.accent-green { color: var(--accent-green); }
+        .chip.accent-amber { color: var(--accent-amber); }
+
+        /* ─── problem→solution pairs ─── */
+        .ps-pair { display:grid; grid-template-columns:1fr auto 1fr; gap: clamp(6px,1vw,14px); align-items:center; padding: clamp(4px,0.6vw,8px) 0; }
+        .ps-pair .problem, .ps-pair .solution { padding: clamp(6px,1vw,12px); border-radius:var(--radius-tile); background:var(--bg); font-size: clamp(0.7rem,1.1vw,0.9rem); color:var(--body); }
+        .ps-pair .problem { box-shadow:var(--shadow-inset); color:var(--muted); }
+        .ps-pair .solution { box-shadow:var(--shadow-raised-sm); color:var(--heading); font-weight:500; }
+        .ps-pair .arrow { color:var(--slide-accent); font-size: clamp(1rem,2vw,1.8rem); font-weight:300; }
+
+        /* ─── ref cards ─── */
+        .ref-card { background:var(--bg); box-shadow:var(--shadow-raised-sm); border-radius:var(--radius-tile); padding: clamp(6px,1vw,12px); font-size: clamp(0.6rem,0.9vw,0.8rem); color:var(--body); text-align:center; }
+        .ref-card strong { color:var(--heading); font-weight:600; display:block; }
+
+        /* ─── quote card ─── */
+        .quote-card { background:var(--bg); box-shadow:var(--shadow-inset); border-radius:var(--radius-card); padding: clamp(16px,3vw,36px); font-size: clamp(0.9rem,1.7vw,1.3rem); line-height:1.65; color:var(--heading); font-weight:400; text-align:center; width:100%; margin:0 auto; }
+        .quote-card .attribution { margin-top: clamp(12px,2vw,24px); font-size: clamp(0.7rem,1.2vw,1rem); color:var(--muted); font-weight:400; }
+
+        /* ─── slide title row ─── */
+        .slide-title-row { display:flex; align-items:center; gap: clamp(10px,1.8vw,20px); margin-bottom: clamp(8px,1.4vw,18px); padding:8px 12px; margin-left:-12px; overflow:visible; }
+        .slide-title-row .icon-holder { flex-shrink:0; }
+        .slide-title-row h2 { margin:0; }
+
+        /* ─── NEW: scenario card (Hook slide) ─── */
+        .scenario-card {
+            background: rgba(51, 26, 26, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(239, 68, 68, 0.25);
+            border-left: 4px solid var(--accent-red);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-raised);
+            padding: clamp(14px, 2.2vw, 28px);
+            font-size: clamp(0.9rem, 1.6vw, 1.2rem);
+            font-style: italic;
+            color: var(--heading);
+            line-height: 1.7;
+            position: relative;
+        }
+        .scenario-card::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 18px;
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--accent-red);
+            opacity: 0.25;
+            line-height: 1;
+            font-style: normal;
+        }
+        .scenario-card .scene-label {
+            font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+            font-weight: 700;
+            color: var(--accent-red);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-style: normal;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .scenario-reveal {
+            background: rgba(91, 108, 249, 0.08);
+            border: 1px solid rgba(91, 108, 249, 0.2);
+            border-radius: var(--radius-tile);
+            box-shadow: var(--shadow-raised-sm);
+            padding: clamp(10px, 1.5vw, 18px);
+            font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+            font-weight: 600;
+            color: var(--heading);
+            text-align: center;
+        }
+        .scenario-reveal span {
+            color: var(--slide-accent);
+            font-weight: 700;
+        }
+
+        /* ─── NEW: timeline bar (Speed story) ─── */
+        .timeline-bar-wrap {
+            width: 100%;
+            background: var(--bg);
+            border-radius: var(--radius-tile);
+            box-shadow: var(--shadow-inset);
+            padding: clamp(12px, 1.8vw, 22px);
+        }
+        .timeline-bar-label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .timeline-bar-label {
+            font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+            font-weight: 600;
+            color: var(--body);
+        }
+        .timeline-bar-track {
+            width: 100%;
+            height: clamp(16px, 2.2vw, 26px);
+            background: rgba(200, 207, 220, 0.5);
+            border-radius: 999px;
+            box-shadow: var(--shadow-inset);
+            overflow: hidden;
+            position: relative;
+        }
+        .timeline-bar-before {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ef4444cc, #f59e0b88);
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            font-size: clamp(0.55rem, 0.85vw, 0.72rem);
+            font-weight: 700;
+            color: white;
+        }
+        .timeline-bar-after {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, #10b981dd, #5b6cf988);
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            font-size: clamp(0.55rem, 0.85vw, 0.72rem);
+            font-weight: 700;
+            color: white;
+        }
+        .timeline-bar-annotation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+        }
+        .timeline-bar-annotation span {
+            font-size: clamp(0.58rem, 0.9vw, 0.75rem);
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        /* ─── NEW: ROI stat tiles ─── */
+        .roi-tile {
+            background: var(--bg);
+            border-radius: var(--radius-tile);
+            box-shadow: var(--shadow-inset);
+            padding: clamp(12px, 1.8vw, 22px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .roi-tile::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: var(--slide-accent);
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+        .roi-tile .roi-number {
+            font-size: clamp(1.5rem, 3.4vw, 2.8rem);
+            font-weight: 800;
+            color: var(--slide-accent);
+            line-height: 1.05;
+        }
+        .roi-tile .roi-unit {
+            font-size: clamp(0.65rem, 1vw, 0.85rem);
+            font-weight: 600;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .roi-tile .roi-label {
+            font-size: clamp(0.62rem, 0.95vw, 0.8rem);
+            color: var(--body);
+            font-weight: 400;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        /* ─── NEW: CTA button ─── */
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: clamp(14px, 2vw, 22px) clamp(28px, 5vw, 56px);
+            background: var(--bg);
+            border-radius: var(--radius-pill);
+            box-shadow: var(--shadow-raised), 0 0 24px rgba(91, 108, 249, 0.18);
+            border: 2px solid rgba(91, 108, 249, 0.3);
+            font-size: clamp(1rem, 1.8vw, 1.35rem);
+            font-weight: 700;
+            color: var(--slide-accent);
+            cursor: pointer;
+            text-decoration: none;
+            transition: box-shadow 0.25s, transform 0.18s, border-color 0.25s;
+            font-family: var(--font);
+        }
+        .cta-button:hover {
+            box-shadow: var(--shadow-raised), 0 0 40px rgba(91, 108, 249, 0.32);
+            transform: translateY(-3px);
+            border-color: rgba(91, 108, 249, 0.55);
+        }
+        .cta-button:active {
+            box-shadow: var(--shadow-pressed);
+            transform: scale(0.97);
+        }
+        .cta-button svg {
+            width: 22px;
+            height: 22px;
+            stroke: var(--slide-accent);
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        /* ─── NEW: deployment timeline steps ─── */
+        .deploy-step {
+            display: flex;
+            align-items: flex-start;
+            gap: clamp(10px, 1.5vw, 18px);
+            padding: clamp(8px, 1.2vw, 14px) 0;
+            border-bottom: 1px solid rgba(200, 207, 220, 0.3);
+        }
+        .deploy-step:last-child { border-bottom: none; }
+        .deploy-step-badge {
+            min-width: clamp(56px, 7vw, 80px);
+            background: var(--bg);
+            box-shadow: var(--shadow-raised-sm);
+            border-radius: var(--radius-pill);
+            padding: 4px 10px;
+            font-size: clamp(0.58rem, 0.85vw, 0.72rem);
+            font-weight: 700;
+            color: var(--slide-accent);
+            text-align: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .deploy-step-body h3 {
+            font-size: clamp(0.8rem, 1.25vw, 1rem);
+            margin-bottom: 2px;
+        }
+        .deploy-step-body .muted-text { font-size: clamp(0.62rem, 0.92vw, 0.78rem); }
+
+        /* ─── accent color transitions ─── */
+        :root { transition: --slide-accent 0.4s; }
+        .slide[data-accent="amber"] { --slide-accent: #f59e0b; }
+        .slide[data-accent="blue"] { --slide-accent: #5b6cf9; }
+        .slide[data-accent="red"] { --slide-accent: #ef4444; }
+        .slide[data-accent="green"] { --slide-accent: #10b981; }
+        .slide[data-accent="purple"] { --slide-accent: #8b5cf6; }
+        .slide[data-accent="gold"] { --slide-accent: #f59e0b; }
+        .slide[data-accent="electric"] { --slide-accent: #3b82f6; }
+
+        /* ─── wave canvas ─── */
+        .wave-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+            transition: opacity 0.6s ease;
+        }
+
+        /* ─── print ─── */
+        @media print {
+            body { background: white; overflow: visible; height: auto; }
+            .deck { height: auto; overflow: visible; background: white; }
+            .slide { position: relative !important; opacity: 1 !important; pointer-events: none !important; display: block !important; height: 100vh !important; width: 100vw !important; page-break-after: always; padding: 6% 8%; background: var(--bg) !important; margin: 0 auto; transform: none !important; overflow: hidden; }
+            .slide.active { z-index: auto; }
+            .nav-btn, .edge-zone, .progress-bar, .slide-counter, .bottom-nav-bar { display: none !important; }
+            .slide-content { max-height: 100vh; overflow: hidden; }
+        }
+
+        /* ─── reduced motion ─── */
+        @media (prefers-reduced-motion: reduce) {
+            .slide, .progress-fill, button, .nav-btn, .chip, .cta-button { transition: none !important; }
+        }
+
+        /* ─── focus visible ─── */
+        :focus-visible { outline: 2px solid var(--slide-accent); outline-offset: 2px; }
+
+        /* ─── responsive ─── */
+        @media (max-width: 600px) {
+            .slide { padding: 5% 4%; padding-bottom: 80px; }
+            .ps-pair { grid-template-columns: 1fr; gap: 4px; }
+            .ps-pair .arrow { transform: rotate(90deg); padding: 2px 0; }
+            .comp-row { grid-template-columns: 1fr; gap: 2px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- dynamic background wave canvas -->
+    <canvas id="waveCanvas" class="wave-canvas"></canvas>
+
+    <!-- progress bar -->
+    <div class="progress-bar" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress">
+        <div class="progress-fill" style="width:8.33%;"></div>
+    </div>
+    <div class="slide-counter" aria-live="polite">1 / 12</div>
+
+    <!-- bottom navigation dock -->
+    <nav class="bottom-nav-bar" aria-label="Slide navigation">
+        <button class="nav-btn prev" aria-label="Previous slide" id="prevBtn" title="Previous Slide (Left Arrow)">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="nav-slide-title" id="navSlideTitle">The Moment That Costs You Everything</span>
+        <button class="nav-btn next" aria-label="Next slide" id="nextBtn" title="Next Slide (Right Arrow)">
+            <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </button>
+    </nav>
+
+    <!-- edge click zones -->
+    <div class="edge-zone left" id="edgeLeft" aria-hidden="true"></div>
+    <div class="edge-zone right" id="edgeRight" aria-hidden="true"></div>
+
+    <div class="deck" role="main">
+        <div class="slides-wrapper">
+
+            <!-- ======= SLIDE 1 – HOOK: THE MOMENT THAT COSTS YOU EVERYTHING ======= -->
+            <section class="slide active" data-index="0" data-accent="red" data-title="The Moment That Costs You Everything" aria-label="Slide 1: Hook — The Crisis Scenario">
+                <div class="slide-content" style="justify-content:center;">
+                    <div class="flex-row gap-sm mb-2">
+                        <span class="chip">Problem Statement PSC26117</span>
+                        <span class="chip">Theme: Smart Automation</span>
+                        <span class="chip">Category: Software</span>
+                    </div>
+                    <div class="scenario-card mb-2">
+                        <span class="scene-label">⚡ A real situation, happening right now</span>
+                        It's <strong>4:47 PM</strong>. The tender closes at <strong>5:00 PM</strong>.<br /><br />
+                        Your AI tool is uploading the procurement document to a server in the United States. The internet drops for 12 seconds. Upload fails. You start over. Your OTP expires. The portal asks you to log in again. <br /><br />
+                        Somewhere, classified government data is sitting on a foreign company's cloud server. No one warned you.
+                    </div>
+                    <div class="scenario-reveal">
+                        <span>We built the alternative.</span><br />
+                        <span style="font-size: clamp(0.75rem,1.1vw,0.9rem); font-weight:400; color: var(--body);">AI that stays on your machine. No cloud. No OTP delays. No data risk.</span>
+                    </div>
+                    <div class="flex-row gap-sm mt-2" style="flex-wrap:wrap;">
+                        <span class="pill" style="padding:8px 20px;font-weight:600;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            By — Gulshan Singh
+                        </span>
+                        <span class="chip accent">SIH 2025 — Smart India Hackathon</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 2 – TITLE & BRAND REVEAL ======= -->
+            <section class="slide" data-index="1" data-accent="blue" data-title="Sovereign AI Workbench" aria-label="Slide 2: Title & Vision">
+                <div class="slide-content" style="justify-content:center;">
+                    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,2.2vw,30px);">
+                        <div>
+                            <h1>Sovereign On-Premise<br />Agentic AI Workbench</h1>
+                            <h2 style="font-size:clamp(1.1rem,2.6vw,2rem);font-weight:500;color:var(--body);margin-top:0.2em;">100% Local. Zero Cloud. Built for India's Government &amp; Enterprise.</h2>
+                        </div>
+                        <div class="tile" style="padding: clamp(12px,1.8vw,22px);">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:10px;font-size:clamp(0.85rem,1.3vw,1rem);">What this means for you:</div>
+                            <div class="flex-col gap-sm">
+                                <div class="check-item">
+                                    <div class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="body-text"><strong>Your documents never leave your office.</strong> No cloud uploads, no foreign servers, no data risk.</span>
+                                </div>
+                                <div class="check-item">
+                                    <div class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="body-text"><strong>No more OTP delays.</strong> Log in to government portals once — our system handles the rest all day.</span>
+                                </div>
+                                <div class="check-item">
+                                    <div class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="body-text"><strong>Works on your existing office computer.</strong> No expensive cloud subscription. No IT department dependency.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-row gap-sm" style="flex-wrap:wrap;">
+                            <span class="chip accent">Production-Ready Build</span>
+                            <span class="chip">Processes Documents Twice as Fast</span>
+                            <span class="chip">Auto-Adapts to Your Hardware</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 3 – THE PAIN YOU KNOW ======= -->
+            <section class="slide" data-index="2" data-accent="red" data-title="The Pain You Know" aria-label="Slide 3: Core Problem">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <h2>The Pain Every Government Officer Knows</h2>
+                    </div>
+                    <div class="body-text mb-2" style="font-size:clamp(0.88rem,1.5vw,1.05rem);">
+                        Every week, public sector teams lose hours — and risk data — using AI tools that were never built for government work.
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr;gap:clamp(4px,0.6vw,8px);" class="mt-1">
+                        <div class="ps-pair">
+                            <div class="problem"><strong>Every tender cycle:</strong> Sensitive procurement documents get uploaded to US-based cloud AI servers. Nobody audits where they go.</div>
+                            <div class="arrow">→</div>
+                            <div class="solution">Our system keeps your files on your own machine. <strong>Your data stays in your office. Always.</strong></div>
+                        </div>
+                        <div class="ps-pair">
+                            <div class="problem"><strong>Every portal login:</strong> OTP delays and expired sessions destroy automation workflows and waste officer time.</div>
+                            <div class="arrow">→</div>
+                            <div class="solution">Log in to GeM once. <strong>Our system remembers your session securely — no more OTP interruptions all day.</strong></div>
+                        </div>
+                        <div class="ps-pair">
+                            <div class="problem"><strong>Every big document:</strong> Sending a 50-page PDF through a slow server takes 8+ seconds per page. Officers wait.</div>
+                            <div class="arrow">→</div>
+                            <div class="solution">Your browser and your PC work together simultaneously. <strong>Documents processed in half the time.</strong></div>
+                        </div>
+                        <div class="ps-pair">
+                            <div class="problem"><strong>Every IT setup:</strong> Wrong AI model installed crashes the computer. IT helpdesk calls pile up.</div>
+                            <div class="arrow">→</div>
+                            <div class="solution">The system checks your PC's specs and automatically installs the right AI model. <strong>Zero crashes. Zero IT calls.</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 4 – OUR SOLUTION IN 30 SECONDS ======= -->
+            <section class="slide" data-index="3" data-accent="blue" data-title="Our Solution in 30 Seconds" aria-label="Slide 4: Sovereign Solution">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <h2>Our Solution — In Plain English</h2>
+                    </div>
+                    <div class="body-text mb-2" style="font-size:clamp(0.88rem,1.5vw,1.05rem);">
+                        One system that gives your team the power of AI — privately, instantly, and completely on your own hardware.
+                    </div>
+                    <div class="grid-3 mb-2">
+                        <div class="tile">
+                            <div class="flex-row gap-sm items-center mb-1">
+                                <div class="icon-holder-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+                                <span style="font-weight:700;color:var(--heading);">Internet Off in One Click</span>
+                            </div>
+                            <div class="muted-text">Instantly cut off external internet access while handling classified documents — AI keeps working locally.</div>
+                        </div>
+                        <div class="tile">
+                            <div class="flex-row gap-sm items-center mb-1">
+                                <div class="icon-holder-sm"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                                <span style="font-weight:700;color:var(--heading);">Log In Once, Work All Day</span>
+                            </div>
+                            <div class="muted-text">Your government portal session is stored securely on your machine. No OTP popups. No interruptions. Just work.</div>
+                        </div>
+                        <div class="tile">
+                            <div class="flex-row gap-sm items-center mb-1">
+                                <div class="icon-holder-sm"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                                <span style="font-weight:700;color:var(--heading);">Runs on Your Office PC</span>
+                            </div>
+                            <div class="muted-text">No new hardware purchases. Automatically detects your computer's power and picks the right AI model for it.</div>
+                        </div>
+                    </div>
+                    <div class="tile-inset" style="padding:clamp(10px,1.5vw,18px);">
+                        <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">Why this is different from ChatGPT or cloud AI tools:</div>
+                        <div class="grid-3" style="gap: clamp(6px,1vw,12px);">
+                            <div class="ref-card"><strong>Cloud AI</strong>Your data uploads abroad. Monthly subscription. Needs internet.</div>
+                            <div class="ref-card" style="border: 1.5px solid rgba(91,108,249,0.25); box-shadow: var(--shadow-raised-sm), 0 0 12px rgba(91,108,249,0.1);"><strong>This Workbench ✓</strong>Data stays local. One-time setup. Works offline.</div>
+                            <div class="ref-card"><strong>Manual Processing</strong>Officer reads & types manually. Hours of effort. Human errors.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 5 – SPEED STORY: DOCUMENTS TWICE AS FAST ======= -->
+            <section class="slide" data-index="4" data-accent="green" data-title="Process Documents Twice as Fast" aria-label="Slide 5: Dual Working Engine">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        </div>
+                        <h2>Half the Wait. Same Results. No Cloud Needed.</h2>
+                    </div>
+                    <div class="body-text mb-2" style="font-size:clamp(0.88rem,1.5vw,1.05rem);">
+                        Other tools process your documents one step at a time. We split the work in two — your browser handles half while your PC handles the other half — simultaneously.
+                    </div>
+                    <div class="grid-2 mb-2">
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:8px;">Your Browser Does Half the Work</div>
+                            <div class="muted-text" style="line-height:1.5;">
+                                • Starts reading your document the moment you open it<br />
+                                • Processes image-based pages right inside your browser tab<br />
+                                • No upload needed — everything stays on your screen<br />
+                                • Ideal for quick single-page government forms and scans
+                            </div>
+                        </div>
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:8px;">Your PC Server Does the Other Half</div>
+                            <div class="muted-text" style="line-height:1.5;">
+                                • Runs quietly in the background on the same computer<br />
+                                • Handles complex multi-page PDFs and Word documents<br />
+                                • Extracts text from scanned pages with precision<br />
+                                • Combines both results into a clean, unified output
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-bar-wrap">
+                        <div class="timeline-bar-label-row">
+                            <span class="timeline-bar-label" style="color:#ef4444;">Before: Standard Single Processing</span>
+                            <span class="timeline-bar-label" style="color:#10b981;">After: Dual Parallel Processing</span>
+                        </div>
+                        <div style="position:relative;margin-bottom:10px;">
+                            <div class="timeline-bar-track" style="margin-bottom:8px;">
+                                <div class="timeline-bar-before">8.4 seconds — full wait</div>
+                            </div>
+                            <div class="timeline-bar-track">
+                                <div class="timeline-bar-after">4.1 seconds — done ✓</div>
+                            </div>
+                        </div>
+                        <div class="timeline-bar-annotation">
+                            <span>Benchmark: 10-page mixed PDF with scanned images</span>
+                            <span style="color:#10b981;font-weight:700;">↓ 51% faster</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 6 – NEVER TYPE YOUR OTP AGAIN ======= -->
+            <section class="slide" data-index="5" data-accent="purple" data-title="Never Type Your OTP Again" aria-label="Slide 6: Cookie Vault">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        </div>
+                        <h2>Log In Once. Work Without Interruptions.</h2>
+                    </div>
+                    <div class="body-text mb-2" style="font-size:clamp(0.88rem,1.5vw,1.05rem);">
+                        Government portals like GeM (Government e-Marketplace) require frequent logins that break your workflow. We solved this — completely, securely, and without any workarounds.
+                    </div>
+                    <div class="grid-3 mb-2">
+                        <div class="tile-inset">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">Step 1: One Normal Login</div>
+                            <div class="muted-text">You log in to GeM exactly as you always do — your usual username, your OTP. Just once.</div>
+                        </div>
+                        <div class="tile-inset">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">Step 2: Session Saved Securely</div>
+                            <div class="muted-text">Our system quietly saves your login session — <strong>encrypted and stored only on your machine.</strong> It never leaves your office.</div>
+                        </div>
+                        <div class="tile-inset">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">Step 3: No OTP Tomorrow</div>
+                            <div class="muted-text">Next time you run the system, it logs in for you automatically. Session expired? It alerts you before you start — not during.</div>
+                        </div>
+                    </div>
+                    <div class="flex-row gap-sm">
+                        <span class="chip accent">Zero Security Compromise</span>
+                        <span class="chip">Session Stored Only on Your Machine</span>
+                        <span class="chip">Works with GeM, CPPP & More</span>
+                        <span class="chip accent-green">Legally Compliant</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 7 – YOUR AI, YOUR HARDWARE ======= -->
+            <section class="slide" data-index="6" data-accent="blue" data-title="The AI Adapts to Your Computer" aria-label="Slide 7: Local AI Model Manager">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg>
+                        </div>
+                        <h2>The AI Adapts to Your Computer — Not the Other Way Around</h2>
+                    </div>
+                    <div class="grid-2 mb-2">
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:8px;">Automatically Picks the Right AI for Your PC</div>
+                            <div class="muted-text" style="line-height:1.5;">
+                                The system reads your computer's specifications and recommends the right AI model automatically:<br /><br />
+                                • <strong>Standard office PC</strong> → Lightweight AI, fast responses<br />
+                                • <strong>Mid-range workstation</strong> → Full-power document analysis<br />
+                                • <strong>Enterprise server</strong> → Maximum throughput for bulk processing<br /><br />
+                                No IT knowledge needed. No crashes. No guesswork.
+                            </div>
+                        </div>
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:8px;">You Stay in Control at All Times</div>
+                            <div class="muted-text" style="line-height:1.5;">
+                                • One-click AI installation — no command lines<br />
+                                • Live progress indicator shows download speed &amp; time remaining<br />
+                                • Pause or cancel the AI mid-task without losing work<br />
+                                • <strong>Free Memory in One Click:</strong> Instantly releases your computer's RAM when the AI finishes — keeping your PC fast
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-tile">
+                        <div class="number">3 PC tiers → 1 System</div>
+                        <div class="label">From a basic government workstation to an enterprise server — one installation, automatic configuration</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 8 – YOUR DATA IS YOUR DATA ======= -->
+            <section class="slide" data-index="7" data-accent="purple" data-title="Military-Grade Protection, No Cloud" aria-label="Slide 8: Air-Gapped Security Vault">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <h2>Military-Grade Protection. No Cloud. No Risk.</h2>
+                    </div>
+                    <div class="body-text mb-2" style="font-size:clamp(0.88rem,1.5vw,1.05rem);">
+                        In a government environment where email-based password resets are impossible, we engineered a security system that works completely offline — and never needs an internet connection to keep your data safe.
+                    </div>
+                    <div class="grid-3 mb-2">
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">1. Bank-Level Password Protection</div>
+                            <div class="muted-text">Your password is locked with the same encryption standard used by banks and financial institutions — on your own machine, offline.</div>
+                        </div>
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">2. Emergency Physical Recovery Key</div>
+                            <div class="muted-text">During first-time setup, the system generates a 16-character emergency code. Print it. Lock it in your drawer. If you forget your password — your physical key unlocks the system.</div>
+                        </div>
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">3. No IT Helpdesk Calls</div>
+                            <div class="muted-text">No forgotten-password emails. No waiting for IT support. The recovery system is physical, local, and entirely under your control.</div>
+                        </div>
+                    </div>
+                    <div class="tile-inset" style="padding:clamp(8px,1.2vw,14px);">
+                        <span style="font-weight:600;color:var(--heading);">Customizable User Profiles:</span>
+                        <span class="muted-text"> Every team member gets their own secure profile. Upload a photo, set display name, manage access — all from the built-in settings panel.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 9 – YOUR DOCUMENTS, ORGANIZED ======= -->
+            <section class="slide" data-index="8" data-accent="blue" data-title="Your Documents, Organized" aria-label="Slide 9: Documents Hub">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </div>
+                        <h2>All Your Documents in One Place</h2>
+                    </div>
+                    <div class="body-text mb-2" style="font-size:clamp(0.88rem,1.5vw,1.05rem);">
+                        A clean, central workspace that lists every file the system has worked with — uploaded, scraped from portals, or generated by the AI.
+                    </div>
+                    <div class="grid-2 mb-2">
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:8px;">Select Many, Act Once</div>
+                            <div class="muted-text" style="line-height:1.5;">
+                                • Tick all files at once with a single "Select All" button<br />
+                                • Or pick individual files with checkboxes<br />
+                                • Delete selected files in one click to free up space<br />
+                                • Export everything as a single compressed folder for archiving
+                            </div>
+                        </div>
+                        <div class="tile">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:8px;">Know What You Have at a Glance</div>
+                            <div class="muted-text" style="line-height:1.5;">
+                                • File size, type, and date visible without opening anything<br />
+                                • Preview the text content of any document instantly<br />
+                                • Filter by category: Documents / Scraped Data / AI Reports
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-row gap-sm">
+                        <span class="chip accent">Works with PDF, Word &amp; Excel</span>
+                        <span class="chip">Bulk ZIP Export in One Click</span>
+                        <span class="chip">Instant Cleanup</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 10 – ROI: WHAT DOES THIS SAVE YOU? ======= -->
+            <section class="slide" data-index="9" data-accent="gold" data-title="What Does This Save You?" aria-label="Slide 10: ROI & Cost Savings">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h2>What Does This Actually Save?</h2>
+                    </div>
+                    <div class="body-text mb-2" style="font-size:clamp(0.88rem,1.5vw,1.05rem);">
+                        Cloud AI tools are expensive, risky, and recurring. This workbench is a one-time setup — with measurable savings from day one.
+                    </div>
+                    <div class="grid-4 mb-2">
+                        <div class="roi-tile">
+                            <div class="roi-number">₹0</div>
+                            <div class="roi-unit">Monthly Subscription</div>
+                            <div class="roi-label">vs. ₹5–15 Lakhs/year for cloud AI per department</div>
+                        </div>
+                        <div class="roi-tile">
+                            <div class="roi-number">3–5</div>
+                            <div class="roi-unit">Hours Saved / Officer / Week</div>
+                            <div class="roi-label">On document processing and portal authentication delays</div>
+                        </div>
+                        <div class="roi-tile">
+                            <div class="roi-number">0</div>
+                            <div class="roi-unit">Data Breaches</div>
+                            <div class="roi-label">Files never leave your building — zero external exposure</div>
+                        </div>
+                        <div class="roi-tile">
+                            <div class="roi-number">100%</div>
+                            <div class="roi-unit">On Indian Soil</div>
+                            <div class="roi-label">All data stays on government hardware — full sovereignty</div>
+                        </div>
+                    </div>
+                    <div class="tile-inset" style="padding:clamp(10px,1.5vw,18px);">
+                        <div style="font-weight:700;color:var(--heading);margin-bottom:6px;">Annual Productivity Value Estimate — 10-Officer Department:</div>
+                        <div class="grid-3" style="gap:clamp(6px,1vw,12px);">
+                            <div class="ref-card"><strong>Time Saved</strong>3 hrs × 10 officers × 50 weeks = <span style="color:var(--accent-green);font-weight:700;">1,500 officer-hours/year</span></div>
+                            <div class="ref-card"><strong>Processing Cost</strong>Cloud AI subscription eliminated = <span style="color:var(--accent-green);font-weight:700;">₹5–10 Lakhs saved/year</span></div>
+                            <div class="ref-card"><strong>Risk Value</strong>Zero data sovereignty incidents = <span style="color:var(--accent-green);font-weight:700;">Immeasurable compliance benefit</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 11 – WHAT HAPPENS NEXT? ======= -->
+            <section class="slide" data-index="10" data-accent="electric" data-title="What Happens Next?" aria-label="Slide 11: CTA & Deployment Timeline">
+                <div class="slide-content">
+                    <div class="slide-title-row">
+                        <div class="icon-holder">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <h2>Ready to Deploy — Here Is the Plan</h2>
+                    </div>
+                    <div class="grid-2 mb-2" style="align-items:start;">
+                        <div class="tile" style="padding: clamp(12px,1.8vw,22px);">
+                            <div style="font-weight:700;color:var(--heading);margin-bottom:10px;">Deployment Timeline</div>
+                            <div class="deploy-step">
+                                <div class="deploy-step-badge">Day 1</div>
+                                <div class="deploy-step-body">
+                                    <h3>Hardware Check &amp; Installation</h3>
+                                    <div class="muted-text">System inspects your PC, installs the right AI model automatically. Done in under 30 minutes.</div>
+                                </div>
+                            </div>
+                            <div class="deploy-step">
+                                <div class="deploy-step-badge">Week 1–2</div>
+                                <div class="deploy-step-body">
+                                    <h3>Pilot with 5 Officers</h3>
+                                    <div class="muted-text">A small team tests the system on real government documents with full support from our team.</div>
+                                </div>
+                            </div>
+                            <div class="deploy-step">
+                                <div class="deploy-step-badge">Month 2</div>
+                                <div class="deploy-step-body">
+                                    <h3>Full Department Rollout</h3>
+                                    <div class="muted-text">All officers onboarded. Workflows integrated. Productivity gains begin immediately.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-col gap-md">
+                            <div class="tile">
+                                <div style="font-weight:700;color:var(--heading);margin-bottom:8px;">Risk Mitigation</div>
+                                <div class="check-item mb-1">
+                                    <div class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="muted-text">Local data backup — your IT team retains full control</span>
+                                </div>
+                                <div class="check-item mb-1">
+                                    <div class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="muted-text">No single point of failure — works offline even if network goes down</span>
+                                </div>
+                                <div class="check-item">
+                                    <div class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="muted-text">Open-source foundation — no vendor lock-in, ever</span>
+                                </div>
+                            </div>
+                            <div style="text-align:center; padding: clamp(8px,1.5vw,20px) 0;">
+                                <div style="font-size:clamp(0.7rem,1vw,0.85rem);color:var(--muted);margin-bottom:14px;font-weight:500;">Ready to see it in action?</div>
+                                <button class="cta-button" id="ctaBtn" onclick="this.textContent='✓ Request Sent!'">
+                                    <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    Request a Live Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tile-inset" style="padding:clamp(8px,1.2vw,14px);">
+                        <span style="font-weight:600;color:var(--heading);">Built by:</span>
+                        <span class="muted-text"> Gulshan Singh — SIH 2025 · Smart Automation · Problem Statement PSC26117 · Category: Software</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======= SLIDE 12 – CLOSING BRAND MOMENT ======= -->
+            <section class="slide" data-index="11" data-accent="blue" data-title="Sovereign AI — For Every Officer" aria-label="Slide 12: Closing Vision">
+                <div class="slide-content" style="justify-content:center;align-items:center;">
+                    <div style="width:100%;">
+                        <div class="quote-card">
+                            "We believe every government officer deserves AI that works as hard as they do —
+                            <strong>privately, securely, and entirely on Indian soil.</strong>
+                            No cloud dependency. No data risk. No compromises."
+                            <div class="attribution">— Gulshan Singh · Sovereign AI Workbench · SIH 2025</div>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,1.5vw,20px);margin-top:clamp(16px,2.5vw,30px);">
+                            <span class="chip" style="font-size:clamp(0.8rem,1.2vw,1rem);">Documents Processed Twice as Fast</span>
+                            <span class="chip" style="font-size:clamp(0.8rem,1.2vw,1rem);">100% On-Premise — No Cloud</span>
+                            <span class="chip accent" style="font-size:clamp(0.8rem,1.2vw,1rem);">Proudly Made in India 🇮🇳</span>
+                        </div>
+                        <div style="text-align:center;margin-top:clamp(12px,2vw,24px);">
+                            <span class="pill" style="font-size:clamp(0.75rem,1vw,0.9rem);">Sovereign On-Premise Agentic AI Workbench · PSC26117</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div><!-- /slides-wrapper -->
+    </div><!-- /deck -->
+
+    <script>
+        (function() {
+            'use strict';
+
+            const slides = document.querySelectorAll('.slide');
+            const total = slides.length; // 12
+            let current = 0;
+            let isTransitioning = false;
+
+            const fill = document.querySelector('.progress-fill');
+            const counter = document.querySelector('.slide-counter');
+            const navTitle = document.getElementById('navSlideTitle');
+            const canvas = document.getElementById('waveCanvas');
+
+            // Accent colours & wave opacities per slide
+            const ACCENT_COLORS = {
+                'amber':    '#f59e0b',
+                'blue':     '#5b6cf9',
+                'red':      '#ef4444',
+                'green':    '#10b981',
+                'purple':   '#8b5cf6',
+                'gold':     '#f59e0b',
+                'electric': '#3b82f6'
+            };
+            const WAVE_OPACITIES = {
+                0: 0.75,  // Hook — high drama
+                1: 0.55,
+                2: 0.60,
+                3: 0.50,
+                4: 0.55,
+                5: 0.45,
+                6: 0.45,
+                7: 0.50,
+                8: 0.45,
+                9: 0.60,
+                10: 0.80, // CTA — vivid
+                11: 0.65  // Closing
+            };
+
+            function updateUI(index) {
+                slides.forEach((s, i) => {
+                    s.classList.toggle('active', i === index);
+                });
+                const pct = ((index + 1) / total) * 100;
+                if (fill) fill.style.width = pct + '%';
+                if (counter) counter.textContent = (index + 1) + ' / ' + total;
+                const bar = document.querySelector('.progress-bar');
+                if (bar) bar.setAttribute('aria-valuenow', index + 1);
+
+                // Update nav slide title
+                const activeSlide = slides[index];
+                const slideTitle = activeSlide ? activeSlide.dataset.title : '';
+                if (navTitle) navTitle.textContent = slideTitle;
+
+                // Apply accent colour to root
+                const accentKey = activeSlide ? activeSlide.dataset.accent : 'blue';
+                const color = ACCENT_COLORS[accentKey] || '#5b6cf9';
+                document.documentElement.style.setProperty('--slide-accent', color);
+                if (fill) fill.style.background = color;
+
+                // Update wave opacity
+                if (canvas) {
+                    canvas.style.opacity = (WAVE_OPACITIES[index] !== undefined ? WAVE_OPACITIES[index] : 0.6);
+                }
+            }
+
+            function goTo(index) {
+                if (isTransitioning) return;
+                if (index < 0) index = 0;
+                if (index >= total) index = total - 1;
+                if (index === current) return;
+                isTransitioning = true;
+                current = index;
+                updateUI(current);
+                setTimeout(() => { isTransitioning = false; }, 360);
+            }
+
+            function next() { goTo(current + 1); }
+            function prev() { goTo(current - 1); }
+
+            // ── keyboard ──
+            document.addEventListener('keydown', (e) => {
+                const key = e.key;
+                if (key === 'ArrowRight' || key === 'ArrowDown' || key === ' ' || key === 'Space') {
+                    e.preventDefault(); next();
+                } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
+                    e.preventDefault(); prev();
+                } else if (key === 'Home' || key === 'PageUp') {
+                    e.preventDefault(); goTo(0);
+                } else if (key === 'End' || key === 'PageDown') {
+                    e.preventDefault(); goTo(total - 1);
+                } else if (key === 'f' || key === 'F') {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen().catch(() => {});
+                    } else {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                    }
+                }
+            });
+
+            // ── buttons ──
+            document.getElementById('prevBtn').addEventListener('click', prev);
+            document.getElementById('nextBtn').addEventListener('click', next);
+
+            // ── edge zones ──
+            document.getElementById('edgeLeft').addEventListener('click', prev);
+            document.getElementById('edgeRight').addEventListener('click', next);
+
+            // ── touch swipe ──
+            let touchStartX = 0, touchStartY = 0;
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+            document.addEventListener('touchend', (e) => {
+                const dx = e.changedTouches[0].screenX - touchStartX;
+                const dy = e.changedTouches[0].screenY - touchStartY;
+                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+                    if (dx < 0) next(); else prev();
+                }
+            }, { passive: true });
+
+            // ── fullscreen via double-click ──
+            document.addEventListener('dblclick', () => {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {});
+                } else {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                }
+            });
+
+            // ── init ──
+            updateUI(0);
+
+            // ── respect prefers-reduced-motion ──
+            const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+            if (motionQuery.matches) {
+                document.querySelectorAll('.slide').forEach(el => el.style.transition = 'none');
+            }
+
+            // ── dynamic background sine wave renderer ──
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let width = canvas.width = window.innerWidth;
+                let height = canvas.height = window.innerHeight;
+                let step = 0;
+
+                function resizeCanvas() {
+                    width = canvas.width = window.innerWidth;
+                    height = canvas.height = window.innerHeight;
+                }
+                window.addEventListener('resize', resizeCanvas);
+
+                const lines = [
+                    { amplitude: 48, frequency: 0.0034, speed: 0.015, color: 'rgba(91, 108, 249, 0.44)', width: 2.8, offset: 0,   yOffsetRatio: 0.33 },
+                    { amplitude: 62, frequency: 0.0027, speed: 0.011, color: 'rgba(91, 108, 249, 0.30)', width: 2.2, offset: 1.5, yOffsetRatio: 0.47 },
+                    { amplitude: 38, frequency: 0.0053, speed: 0.021, color: 'rgba(16, 185, 129, 0.36)', width: 2.0, offset: 3.0, yOffsetRatio: 0.61 },
+                    { amplitude: 72, frequency: 0.0021, speed: 0.008, color: 'rgba(139, 92, 246, 0.28)', width: 3.2, offset: 4.2, yOffsetRatio: 0.50 },
+                    { amplitude: 52, frequency: 0.0044, speed: 0.014, color: 'rgba(91, 108, 249, 0.22)', width: 1.8, offset: 5.5, yOffsetRatio: 0.73 }
+                ];
+
+                function drawWaves() {
+                    ctx.clearRect(0, 0, width, height);
+                    step += 0.8;
+
+                    lines.forEach(line => {
+                        ctx.beginPath();
+                        ctx.lineWidth = line.width;
+                        ctx.strokeStyle = line.color;
+
+                        const centerY = height * (line.yOffsetRatio || 0.5);
+                        for (let x = 0; x <= width; x += 4) {
+                            const normalizedX = (x / width) * Math.PI * 2;
+                            const envelope = Math.sin(normalizedX * 0.5);
+                            const y = centerY + Math.sin(x * line.frequency + (step * line.speed) + line.offset) * line.amplitude * envelope;
+                            if (x === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.stroke();
+                    });
+
+                    requestAnimationFrame(drawWaves);
+                }
+
+                drawWaves();
+            }
+
+        })();
+    </script>
+
+</body>
+</html>

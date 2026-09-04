@@ -1,0 +1,36 @@
+# Git Ignore rules for Sovereign AI Workbench
+
+# Dependencies & Environments
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Runtime & Generated Files
+output/
+session_vault/
+*.log
+*.sqlite3
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+
+# System & IDE Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.antigravity-ide/
+.gemini/
+*.swp
