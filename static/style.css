@@ -1498,8 +1498,12 @@ textarea.prompt-area {
   position: fixed;
   top: 0;
   left: 0;
+<<<<<<< HEAD
   width: 330px;
   max-width: 90vw;
+=======
+  width: 290px;
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
   height: 100vh;
   background: var(--bg);
   box-shadow: var(--shadow-raised);
@@ -1509,7 +1513,10 @@ textarea.prompt-area {
   transform: translateX(-100%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   border-right: 1px solid var(--line);
+<<<<<<< HEAD
   overflow: hidden;
+=======
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
 }
 
 .sidebar-drawer.open {
@@ -1526,7 +1533,11 @@ textarea.prompt-area {
   display: flex;
   align-items: center;
   justify-content: space-between;
+<<<<<<< HEAD
   padding: 16px 18px 12px 18px;
+=======
+  padding: 18px 20px;
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
 }
 
 .sidebar-brand {
@@ -1573,6 +1584,7 @@ textarea.prompt-area {
   color: var(--ink);
 }
 
+<<<<<<< HEAD
 /* Defined Search Bar with Crisp Neumorphic Elevation & Borders */
 .search-bar-defined {
   display: flex;
@@ -1681,12 +1693,81 @@ textarea.prompt-area {
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
+=======
+/* Sidebar Mode Toggle (Chat / Spark) */
+.sidebar-mode-toggle {
+  display: flex;
+  margin: 0 18px 14px;
+  padding: 4px;
+  background: var(--bg);
+  border-radius: 999px;
+  box-shadow: var(--shadow-inset);
+}
+
+.sidebar-mode-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mut);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.sidebar-mode-btn.active {
+  background: var(--bg);
+  box-shadow: var(--shadow-raised-sm);
+  color: var(--ink);
+}
+
+.beta-badge {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: rgba(129, 140, 248, 0.15);
+  color: var(--acc);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* Scrollable Nav Area */
+.sidebar-nav-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px 16px;
+}
+
+.sidebar-new-chat-btn {
+  width: calc(100% - 8px);
+  margin: 4px 4px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--bg);
+  box-shadow: var(--shadow-raised-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  margin-bottom: 16px;
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
   transition: all 0.2s ease;
 }
 
 .sidebar-new-chat-btn:hover {
   box-shadow: var(--shadow-inset);
   color: var(--acc);
+<<<<<<< HEAD
   border-color: var(--acc);
 }
 
@@ -1926,6 +2007,71 @@ textarea.prompt-area {
   height: 16px;
 }
 
+=======
+}
+
+.sidebar-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.sb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.sb-menu-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .sb-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sb-menu-item.active {
+  background: rgba(91, 108, 249, 0.1);
+  color: var(--acc);
+  font-weight: 600;
+}
+
+.sb-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mut);
+  padding: 8px 14px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-notebooks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.truncate-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sidebar Connection Status Pill */
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
 .sb-connection-status {
   display: flex;
   align-items: center;
@@ -1935,7 +2081,11 @@ textarea.prompt-area {
   background: rgba(0, 0, 0, 0.03);
   font-size: 12px;
   color: var(--mut);
+<<<<<<< HEAD
   margin: 8px 16px;
+=======
+  margin-top: 10px;
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
 }
 
 [data-theme="dark"] .sb-connection-status {

@@ -224,12 +224,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (btnOpenPortalIframe && portalIframeModal) {
     btnOpenPortalIframe.addEventListener("click", (e) => {
+<<<<<<< HEAD
       e.preventDefault();
       const iframe = document.getElementById("portal-live-frame");
       if (iframe && (!iframe.src || iframe.src === "about:blank")) {
         iframe.src = "/portal/gem-tenders";
       }
       portalIframeModal.classList.add("show");
+=======
+      // Allow browser to open /portal/gem-tenders in new tab cleanly
+      if (portalIframeModal) {
+        portalIframeModal.classList.add("show");
+      }
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
     });
   }
 
@@ -265,7 +272,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+<<<<<<< HEAD
   // (Sidebar search input is handled in the chat history section below)
+=======
+  // Sidebar Search Chats Handler
+  const sbBtnSearch = document.getElementById("sb-btn-search");
+  const sbSearchBoxContainer = document.getElementById("sb-search-box-container");
+  const sbChatSearchInput = document.getElementById("sb-chat-search-input");
+
+  if (sbBtnSearch && sbSearchBoxContainer && sbChatSearchInput) {
+    sbBtnSearch.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = sbSearchBoxContainer.style.display === "none";
+      sbSearchBoxContainer.style.display = isHidden ? "block" : "none";
+      if (isHidden) sbChatSearchInput.focus();
+    });
+
+    sbChatSearchInput.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      // Filter console logs and sidebar doc items in real time
+      const logEntries = document.querySelectorAll(".log-entry");
+      logEntries.forEach(entry => {
+        const text = entry.textContent.toLowerCase();
+        entry.style.display = text.includes(q) ? "flex" : "none";
+      });
+
+      const docItems = document.querySelectorAll(".sb-doc-item");
+      docItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? "flex" : "none";
+      });
+    });
+  }
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
 
   if (sbBtnLibrary && documentsModal) {
     sbBtnLibrary.addEventListener("click", () => {
@@ -275,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+<<<<<<< HEAD
   const sbBtnLlmResponse = document.getElementById("sb-btn-llm-response");
   if (sbBtnLlmResponse) {
     sbBtnLlmResponse.addEventListener("click", () => {
@@ -637,6 +677,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+=======
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
   if (sbBtnGems && vaultModal) {
     sbBtnGems.addEventListener("click", () => {
       closeSidebar();
@@ -1533,6 +1575,31 @@ Sincerely,
     const query = promptInput ? promptInput.value.trim() : "";
     if (!query) return;
 
+<<<<<<< HEAD
+=======
+    const qLow = query.toLowerCase();
+
+    if (qLow.includes("proposal") || qLow.includes("letter")) {
+      await handleDraftProposalAction();
+      return;
+    }
+
+    if (qLow.includes("tender") || qLow.includes("gem")) {
+      await handleTenderCheckAction();
+      return;
+    }
+
+    if (qLow.includes("login") || qLow.includes("saved login") || qLow.includes("vault") || qLow.includes("session")) {
+      await handleVerifyLoginsAction();
+      return;
+    }
+
+    if (qLow.includes("explain") || qLow.includes("summary") || qLow.includes("project folder")) {
+      await handleExplainWorkspaceAction();
+      return;
+    }
+
+>>>>>>> c0d781685c6cf229db9c33af70728e75a1270ebf
     appendLog("USER", query, "system");
     updateProgress(35, "Assistant is thinking and preparing answer...");
 
