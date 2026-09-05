@@ -15,7 +15,104 @@ document.addEventListener("DOMContentLoaded", () => {
   const folderDropzone = document.getElementById("folder-dropzone");
   const fileInput = document.getElementById("file-input");
 
-  // Status & Progress Elements
+  // Web Speech API Voice Dictation Elements
+  const btnMicToggle = document.getElementById("btn-mic-toggle");
+  const micIconOff = document.getElementById("mic-icon-off");
+  const micIconOn = document.getElementById("mic-icon-on");
+  const micStatusLabel = document.getElementById("mic-status-label");
+  // Audio MediaRecorder for 100% Offline Python Voice Transcription Fallback
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let isListening = false;
+  let basePromptText = "";
+
+  async function startOfflineAudioRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") 
+        ? "audio/webm;codecs=opus" 
+        : (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus") ? "audio/ogg;codecs=opus" : "");
+
+      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+      };
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+        if (audioChunks.length === 0) {
+          appendLog("VOICE-MIC", "Audio recording was empty. Please hold for at least 1-2 seconds while speaking.", "warning");
+          return;
+        }
+        const actualMime = mediaRecorder.mimeType || "audio/webm";
+        const ext = actualMime.includes("ogg") ? "ogg" : "webm";
+        const audioBlob = new Blob(audioChunks, { type: actualMime });
+        const formData = new FormData();
+        formData.append("file", audioBlob, `voice_record.${ext}`);
+
+        appendLog("OFFLINE-VOICE", "Transcribing speech via Groq Whisper Engine...", "system");
+        try {
+          const res = await fetch("/api/workbench/transcribe-audio", {
+            method: "POST",
+            body: formData
+          });
+          const data = await res.json();
+          if (data && data.text && data.text.trim()) {
+            const transcribedText = data.text.trim();
+            if (promptInput) {
+              const prefix = promptInput.value.trim();
+              promptInput.value = prefix ? `${prefix} ${transcribedText}` : transcribedText;
+              promptInput.focus();
+              promptInput.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            appendLog("VOICE-MIC", `Transcribed: "${transcribedText}"`, "emerald");
+          } else {
+            appendLog("VOICE-MIC", "No clear speech detected. Please speak closer to your microphone and try again.", "system");
+          }
+        } catch (err) {
+          console.warn("Transcription error:", err);
+          appendLog("VOICE-MIC", "Could not transcribe audio.", "warning");
+        }
+      };
+      mediaRecorder.start(200);
+      isListening = true;
+      if (promptInput) basePromptText = promptInput.value;
+      if (micIconOff) micIconOff.style.display = "none";
+      if (micIconOn) micIconOn.style.display = "inline-block";
+      if (micStatusLabel) micStatusLabel.textContent = "Recording (Click to Stop & Transcribe)...";
+      btnMicToggle.style.boxShadow = "inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light)";
+      btnMicToggle.style.color = "var(--rose)";
+    } catch (err) {
+      console.warn("MediaRecorder mic access error:", err);
+      appendLog("VOICE-MIC", "Microphone permission denied or unsupported in this browser.", "warning");
+      alert("Microphone Access Required: Please allow microphone access in your browser address bar.");
+      stopListening();
+    }
+  }
+
+  if (btnMicToggle) {
+    btnMicToggle.addEventListener("click", async () => {
+      if (isListening) {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
+        stopListening();
+      } else {
+        startOfflineAudioRecording();
+      }
+    });
+
+    function stopListening() {
+      isListening = false;
+      if (micIconOff) micIconOff.style.display = "inline-block";
+      if (micIconOn) micIconOn.style.display = "none";
+      if (micStatusLabel) micStatusLabel.textContent = "Voice Dictation";
+      btnMicToggle.style.boxShadow = "var(--shadow-raised-sm)";
+      btnMicToggle.style.color = "var(--ink)";
+    }
+  }
   const connectionStatusText = document.getElementById("connection-status-text");
   const progressStatusLabel = document.getElementById("progress-status-label");
   const progressPercentLabel = document.getElementById("progress-percent-label");
@@ -101,6 +198,164 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize theme immediately on load
   initTheme();
+
+  // ====================================================================
+  // SIDEBAR DRAWER CONTROLLER & EVENT BINDINGS
+  // ====================================================================
+  const sidebarDrawer = document.getElementById("sidebar-drawer");
+  const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+  const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+  const btnCloseSidebar = document.getElementById("btn-close-sidebar");
+
+  function openSidebar() {
+    if (sidebarDrawer) sidebarDrawer.classList.add("open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.add("active");
+  }
+
+  function closeSidebar() {
+    if (sidebarDrawer) sidebarDrawer.classList.remove("open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove("active");
+  }
+
+  // Top-Right Live Portal Iframe Modal Controller
+  const btnOpenPortalIframe = document.getElementById("btn-open-portal-iframe");
+  const btnClosePortalIframe = document.getElementById("btn-close-portal-iframe");
+  const portalIframeModal = document.getElementById("portal-iframe-modal");
+
+  if (btnOpenPortalIframe && portalIframeModal) {
+    btnOpenPortalIframe.addEventListener("click", (e) => {
+      // Allow browser to open /portal/gem-tenders in new tab cleanly
+      if (portalIframeModal) {
+        portalIframeModal.classList.add("show");
+      }
+    });
+  }
+
+  if (btnClosePortalIframe && portalIframeModal) {
+    btnClosePortalIframe.addEventListener("click", () => {
+      portalIframeModal.classList.remove("show");
+    });
+    portalIframeModal.addEventListener("click", (e) => {
+      if (e.target === portalIframeModal) portalIframeModal.classList.remove("show");
+    });
+  }
+
+  if (btnToggleSidebar) btnToggleSidebar.addEventListener("click", openSidebar);
+  if (btnCloseSidebar) btnCloseSidebar.addEventListener("click", closeSidebar);
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", closeSidebar);
+
+  // Sidebar Menu Action Handlers
+  const sbBtnNewChat = document.getElementById("sb-btn-new-chat");
+  const sbBtnLibrary = document.getElementById("sb-btn-library");
+  const sbBtnGems = document.getElementById("sb-btn-gems");
+  const sbBtnSettings = document.getElementById("sb-btn-settings");
+  const sbBtnStudents = document.getElementById("sb-btn-students");
+  const sbBtnImages = document.getElementById("sb-btn-images");
+
+  if (sbBtnNewChat) {
+    sbBtnNewChat.addEventListener("click", () => {
+      closeSidebar();
+      if (consoleLogs) consoleLogs.innerHTML = "";
+      if (promptInput) {
+        promptInput.value = "";
+        promptInput.focus();
+      }
+    });
+  }
+
+  // Sidebar Search Chats Handler
+  const sbBtnSearch = document.getElementById("sb-btn-search");
+  const sbSearchBoxContainer = document.getElementById("sb-search-box-container");
+  const sbChatSearchInput = document.getElementById("sb-chat-search-input");
+
+  if (sbBtnSearch && sbSearchBoxContainer && sbChatSearchInput) {
+    sbBtnSearch.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = sbSearchBoxContainer.style.display === "none";
+      sbSearchBoxContainer.style.display = isHidden ? "block" : "none";
+      if (isHidden) sbChatSearchInput.focus();
+    });
+
+    sbChatSearchInput.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      // Filter console logs and sidebar doc items in real time
+      const logEntries = document.querySelectorAll(".log-entry");
+      logEntries.forEach(entry => {
+        const text = entry.textContent.toLowerCase();
+        entry.style.display = text.includes(q) ? "flex" : "none";
+      });
+
+      const docItems = document.querySelectorAll(".sb-doc-item");
+      docItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? "flex" : "none";
+      });
+    });
+  }
+
+  if (sbBtnLibrary && documentsModal) {
+    sbBtnLibrary.addEventListener("click", () => {
+      closeSidebar();
+      if (typeof loadWorkbenchFiles === "function") loadWorkbenchFiles();
+      documentsModal.classList.add("show");
+    });
+  }
+
+  if (sbBtnGems && vaultModal) {
+    sbBtnGems.addEventListener("click", () => {
+      closeSidebar();
+      vaultModal.style.display = "flex";
+    });
+  }
+
+  const sbUserProfileBtn = document.getElementById("sb-user-profile-btn");
+
+  if (sbBtnSettings) {
+    sbBtnSettings.addEventListener("click", () => {
+      closeSidebar();
+      if (settingsModal) {
+        settingsModal.classList.add("show");
+        if (typeof loadHardwareProfile === "function") loadHardwareProfile();
+        if (typeof fetchProfile === "function") fetchProfile();
+      }
+    });
+  }
+
+  if (sbUserProfileBtn) {
+    sbUserProfileBtn.addEventListener("click", () => {
+      closeSidebar();
+      if (settingsModal) {
+        settingsModal.classList.add("show");
+        if (tabBtnSettingsProfile && panelSettingsProfile && typeof switchSettingsTab === "function") {
+          switchSettingsTab(tabBtnSettingsProfile, panelSettingsProfile);
+        }
+        if (typeof loadHardwareProfile === "function") loadHardwareProfile();
+        if (typeof fetchProfile === "function") fetchProfile();
+      }
+    });
+  }
+
+  if (sbBtnStudents) {
+    sbBtnStudents.addEventListener("click", () => {
+      closeSidebar();
+      if (settingsModal) {
+        settingsModal.classList.add("show");
+        if (tabBtnSettingsProfile && panelSettingsProfile && typeof switchSettingsTab === "function") {
+          switchSettingsTab(tabBtnSettingsProfile, panelSettingsProfile);
+        }
+        if (typeof loadHardwareProfile === "function") loadHardwareProfile();
+        if (typeof fetchProfile === "function") fetchProfile();
+      }
+    });
+  }
+
+  if (sbBtnImages && fileInput) {
+    sbBtnImages.addEventListener("click", () => {
+      closeSidebar();
+      fileInput.click();
+    });
+  }
+
 
   // ====================================================================
   // 1. CLIENT-SIDE INDEXEDDB STORAGE (SovereignWorkbenchDB)
@@ -914,11 +1169,6 @@ Sincerely,
       return;
     }
 
-    if (qLow.includes("dual") || qLow.includes("ocr") || qLow.includes("scanned")) {
-      await executeDualEngineOCR(10, "Government_Tender_Notice_Scan.pdf");
-      return;
-    }
-
     if (qLow.includes("explain") || qLow.includes("summary") || qLow.includes("project folder")) {
       await handleExplainWorkspaceAction();
       return;
@@ -1246,6 +1496,19 @@ Sincerely,
       tabBtnUploads.classList.remove("active");
       if (viewUploadsPanel) viewUploadsPanel.style.display = "none";
       if (viewSpecsPanel) viewSpecsPanel.style.display = "block";
+    });
+  }
+
+  // Live File Search Filter
+  const inputSearchFiles = document.getElementById("input-search-files");
+  if (inputSearchFiles) {
+    inputSearchFiles.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const fileCards = document.querySelectorAll("#uploaded-files-list .doc-file-card");
+      fileCards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(q) ? "flex" : "none";
+      });
     });
   }
 
@@ -1657,6 +1920,9 @@ Sincerely,
   const btnCopyRecoveryKey = document.getElementById("btn-copy-recovery-key");
   const btnLockScreenNow = document.getElementById("btn-lock-screen-now");
 
+  const sbUserAvatar = document.getElementById("sb-user-avatar");
+  const sbUserName = document.getElementById("sb-user-name");
+  const sbUserTier = document.getElementById("sb-user-tier");
   const inputAvatarFile = document.getElementById("input-avatar-file");
   const btnUploadAvatar = document.getElementById("btn-upload-avatar");
   const btnResetAvatar = document.getElementById("btn-reset-avatar");
@@ -1670,6 +1936,8 @@ Sincerely,
       if (res.ok && data.profile) {
         const p = data.profile;
         if (navProfileName) navProfileName.textContent = p.name;
+        if (sbUserName) sbUserName.textContent = p.name;
+        if (sbUserTier) sbUserTier.textContent = p.role || "Pro Officer • Air-Gapped";
         if (profileDisplayName) profileDisplayName.textContent = p.name;
         if (profileDisplayRole) profileDisplayRole.textContent = p.role;
         if (inputProfileName) inputProfileName.value = p.name;
@@ -1681,6 +1949,7 @@ Sincerely,
           const imgHtml = `<img src="${p.custom_avatar_b64}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" alt="Profile Photo">`;
           if (profileAvatarPreview) profileAvatarPreview.innerHTML = imgHtml;
           if (lockAvatarPreview) lockAvatarPreview.innerHTML = imgHtml;
+          if (sbUserAvatar) sbUserAvatar.innerHTML = imgHtml;
           if (btnResetAvatar) btnResetAvatar.style.display = "inline-flex";
         } else {
           customAvatarB64 = "";
@@ -1744,6 +2013,7 @@ Sincerely,
       if (!customAvatarB64) {
         if (profileAvatarPreview) profileAvatarPreview.innerHTML = AVATAR_SVGS[preset];
         if (lockAvatarPreview) lockAvatarPreview.innerHTML = AVATAR_SVGS[preset];
+        if (sbUserAvatar) sbUserAvatar.innerHTML = AVATAR_SVGS[preset];
       }
       avatarOptButtons.forEach(b => {
         if (b.dataset.preset === preset) b.classList.add("selected");
