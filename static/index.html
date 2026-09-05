@@ -9,140 +9,147 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=5.1">
+  <link rel="stylesheet" href="/static/style.css?v=5.2">
 </head>
 <body>
+  <!-- Slide-out Sidebar Overlay & Drawer (Gemini Inspired Minimalist Layout) -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <aside class="sidebar-drawer" id="sidebar-drawer">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <svg class="svg-icon lg" viewBox="0 0 24 24" style="color: var(--acc);">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle>
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor"></polygon>
+        </svg>
+        <span class="sidebar-brand-name">Sovereign</span>
+      </div>
+      <button class="sidebar-close-btn" id="btn-close-sidebar" title="Collapse Menu">
+        <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+      </button>
+    </div>
+
+
+
+    <!-- Main Action & Defined Search Bar -->
+    <div class="sidebar-top-container">
+      <button class="sidebar-new-chat-btn" id="sb-btn-new-chat">
+        <svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>New chat</span>
+      </button>
+      
+      <!-- Defined Search Bar with Sharp Border, Inset Well & Icon -->
+      <div class="search-bar-defined" id="sb-search-bar-box">
+        <svg class="svg-icon sm search-bar-icon" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="sb-chat-search-input" class="search-bar-input" placeholder="Search chats..." autocomplete="off">
+        <button id="sb-search-clear-btn" class="search-bar-clear-btn" style="display: none;" title="Clear search">&times;</button>
+      </div>
+    </div>
+
+    <!-- Chat History Section in Sidebar (Scrollable) -->
+    <div class="sb-history-section">
+      <div class="sb-history-header">
+        <div class="sb-history-title-group">
+          <svg class="svg-icon sm" style="color: var(--acc);" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span class="sb-history-heading">Recent Chats</span>
+          <span class="sb-history-count-badge" id="sb-history-count-badge">0</span>
+        </div>
+        <button class="sb-history-clear-btn" id="sb-btn-clear-history" title="Clear Chat History">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>
+
+      <!-- Dedicated Scrollable Container -->
+      <div class="sb-history-scroll-container" id="sb-chat-history-list">
+        <div style="text-align: center; color: var(--muted); padding: 30px 10px; font-size: 12px;">Loading chat history...</div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Tools Row -->
+    <div class="sidebar-tools-grid">
+      <button class="sb-tool-btn" id="sb-btn-students" title="Switch User Profile">
+        <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+        <span>Profiles</span>
+      </button>
+      <button class="sb-tool-btn" id="sb-btn-images" title="Images & Dual OCR">
+        <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        <span>OCR</span>
+      </button>
+      <button class="sb-tool-btn" id="sb-btn-library" title="Library & Ingested Files">
+        <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span>Library</span>
+      </button>
+      <button class="sb-tool-btn" id="sb-btn-llm-response" title="View LLM Output Frame">
+        <svg class="svg-icon sm" viewBox="0 0 24 24" style="color: var(--acc);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="9" cy="10" r="1"></circle><circle cx="12" cy="10" r="1"></circle><circle cx="15" cy="10" r="1"></circle></svg>
+        <span>Response</span>
+      </button>
+    </div>
+
+    <!-- Connection Status Banner inside Sidebar -->
+    <div class="sb-connection-status" id="sb-connection-box">
+      <span class="sb-status-dot green" id="sb-status-dot"></span>
+      <span id="sb-status-text">Connected &bull; Air-Gapped</span>
+    </div>
+
+    <!-- Sidebar Profile Footer -->
+    <div class="sidebar-footer">
+      <div class="sb-user-profile" id="sb-user-profile-btn">
+        <div class="sb-user-avatar" id="sb-user-avatar">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="sb-user-info">
+          <div class="sb-user-name" id="sb-user-name">Gulshan Singh</div>
+          <div class="sb-user-tier" id="sb-user-tier">Pro Officer &bull; Air-Gapped</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="sb-settings-icon-btn" id="btn-theme-toggle" title="Toggle Dark / Light Mode">
+          <svg class="svg-icon sm" id="theme-icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg class="svg-icon sm" id="theme-icon-sun" style="display: none;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="sb-settings-icon-btn" id="sb-btn-settings" title="Settings">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
   <div class="app-container">
 
-    <!-- Header Navigation -->
+    <!-- Header Navigation (Ultra Minimalist with Portal Iframe Action) -->
     <header class="navbar">
       <div class="brand">
-        <div class="brand-icon">
+        <button class="brand-icon clickable-sidebar-toggle" id="btn-toggle-sidebar" title="Open Sidebar Menu">
           <!-- Compass / Brain SVG Icon -->
           <svg class="svg-icon lg" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
             <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
           </svg>
-        </div>
+        </button>
         <div class="brand-title">
           <h1>Sovereign Personal Assistant <span class="tag-sih">SIH PSC26117</span></h1>
           <p class="subtitle">Smart Automation for Everyday Work &bull; Runs 100% on your computer</p>
         </div>
       </div>
 
-      <!-- Live Status HUD -->
+      <!-- Top-Right Portal Iframe Trigger Button -->
       <div class="nav-controls">
-        <div class="hud-pill" id="status-pill">
-          <span class="dot-indicator"></span>
-          <span id="connection-status-text">Assistant: Connected</span>
-        </div>
-
-        <div class="hud-pill" id="brain-pill" title="Fast local assistant brain ready">
-          <!-- CPU / Brain SVG -->
-          <svg class="svg-icon sm" viewBox="0 0 24 24">
-            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-            <line x1="9" y1="9" x2="15" y2="9"></line>
-            <line x1="9" y1="15" x2="15" y2="15"></line>
-            <line x1="10" y1="1" x2="10" y2="4"></line>
-            <line x1="14" y1="1" x2="14" y2="4"></line>
-            <line x1="10" y1="20" x2="10" y2="23"></line>
-            <line x1="14" y1="20" x2="14" y2="23"></line>
-          </svg>
-          <span id="engine-status-text">Brain: Ultra Fast ($0 Free)</span>
-        </div>
-
-        <div class="hud-pill clickable" id="btn-view-vault" title="View pre-saved website logins">
-          <!-- Key / Lock SVG -->
-          <svg class="svg-icon sm" viewBox="0 0 24 24">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <span id="vault-status-text">Instant Login: Active</span>
-        </div>
-
-        <a href="/portal/gem-tenders" target="_blank" class="hud-pill clickable" title="Open Simulated Government e-Marketplace Portal">
-          <!-- External Link SVG -->
+        <button id="btn-open-portal-iframe" class="btn-neumorph primary" title="Open GeM Portal Live View" style="padding: 8px 16px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: none;">
           <svg class="svg-icon sm" viewBox="0 0 24 24">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
             <polyline points="15 3 21 3 21 9"></polyline>
             <line x1="10" y1="14" x2="21" y2="3"></line>
           </svg>
-          <span>Open GeM Portal</span>
-        </a>
-
-        <div class="hud-pill clickable" id="hud-toggle-assistant-frame" title="Toggle Assistant Response Frame">
-          <!-- Maximize / Frame SVG -->
-          <svg class="svg-icon sm" viewBox="0 0 24 24">
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <polyline points="9 21 3 21 3 15"></polyline>
-            <line x1="21" y1="3" x2="14" y2="10"></line>
-            <line x1="3" y1="21" x2="10" y2="14"></line>
-          </svg>
-          <span id="hud-toggle-text">Assistant Output</span>
-        </div>
-
-        <button id="btn-open-folder" class="btn-neumorph" title="Open output files in Windows Explorer">
-          <!-- Folder SVG -->
-          <svg class="svg-icon sm" viewBox="0 0 24 24">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <span>View Documents</span>
+          <span>Open Portal View</span>
         </button>
-
-        <button id="btn-theme-toggle" class="btn-neumorph" title="Toggle between Dark and Light Mode" style="padding: 8px 16px;">
-          <!-- Moon Icon for Dark Mode -->
-          <svg class="svg-icon sm" id="theme-icon-moon" viewBox="0 0 24 24">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-          <!-- Sun Icon for Light Mode -->
-          <svg class="svg-icon sm" id="theme-icon-sun" style="display: none;" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-          <span id="theme-toggle-label">Dark Mode</span>
-        </button>
-
-        <button id="btn-open-settings" class="btn-neumorph primary" title="Control Deck &amp; AI Settings" style="padding: 8px 16px;">
-          <!-- Settings Gear SVG -->
-          <svg class="svg-icon sm" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          <span>Settings</span>
-        </button>
-
-        <div class="hud-pill clickable" id="nav-profile-pill" title="Profile &amp; Security Settings">
-          <div class="profile-avatar-circle" id="nav-profile-avatar-circle">
-            <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-          <span id="nav-profile-name">Senior Officer</span>
-          <span id="nav-lock-indicator" class="lock-dot unlocked" title="Workspace Unlocked"></span>
-        </div>
       </div>
     </header>
-
-    <!-- Privacy & Security Assurance Banner -->
-    <div class="privacy-banner">
-      <div class="privacy-info">
-        <!-- Shield Check SVG -->
-        <svg class="svg-icon" style="color: var(--emerald);" viewBox="0 0 24 24">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          <polyline points="9 12 11 14 15 10"></polyline>
-        </svg>
-        <div>
-          <strong>Privacy &amp; Security Guard: Active</strong>
-          <span>Your files and personal records are processed 100% on this computer. Zero data is uploaded to external servers.</span>
-        </div>
-      </div>
-      <span class="tag-sih" style="color: var(--emerald);">Data Sovereignty Verified</span>
-    </div>
 
     <!-- Flagship One-Click Action Bar -->
     <div class="action-hero-bar">
@@ -221,9 +228,26 @@
           <span>Your assistant reads files locally to answer questions and help your team</span>
         </div>
 
-        <!-- Plain English Prompt Input -->
-        <div class="input-well">
-          <textarea id="prompt-input" class="prompt-area" rows="4" placeholder="Type your instruction in plain English... (e.g. Check today's government tenders, or read my folder and explain what it does)"></textarea>
+        <!-- Plain English & Voice Prompt Input Well -->
+        <div class="input-well" style="position: relative; display: flex; flex-direction: column;">
+          <textarea id="prompt-input" class="prompt-area" rows="4" placeholder="Type or narrate your plain English prompt... (e.g. Check today's government tenders, or read my folder and explain what it does)"></textarea>
+          <div style="display: flex; justify-content: flex-end; align-items: center; width: 100%; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line);">
+            <button id="btn-mic-toggle" class="btn-neumorph" title="Narrate prompt using Web Speech Voice API" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+              <svg class="svg-icon sm" id="mic-icon-off" viewBox="0 0 24 24" style="color: var(--acc);">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+              <svg class="svg-icon sm" id="mic-icon-on" style="display: none; color: var(--rose);" viewBox="0 0 24 24">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+              <span id="mic-status-label">Voice Dictation</span>
+            </button>
+          </div>
         </div>
 
         <!-- Sample Commands for Non-Technical Users -->
@@ -395,8 +419,8 @@
         <div class="modal-body" style="gap: 16px;">
           <!-- Uploaded Files Section -->
           <div id="view-uploads-panel">
-            <!-- Batch Toolbar -->
-            <div class="doc-batch-bar" id="doc-batch-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; margin-bottom: 12px; border-radius: var(--r-tile); background: var(--card-tint); border: 1px solid var(--line);">
+            <!-- Batch Toolbar & Search -->
+            <div class="doc-batch-bar" id="doc-batch-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; margin-bottom: 12px; border-radius: var(--r-tile); background: var(--card-tint); border: 1px solid var(--line); flex-wrap: wrap; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 10px;">
                 <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink);">
                   <input type="checkbox" id="check-select-all-files" style="cursor: pointer; width: 16px; height: 16px;">
@@ -404,6 +428,13 @@
                 </label>
                 <span id="selected-files-count" style="font-size: 11.5px; color: var(--muted);">(0 selected)</span>
               </div>
+              
+              <!-- File Search Filter Input -->
+              <div class="input-well" style="flex: 1; max-width: 260px; padding: 5px 10px; font-size: 12px;">
+                <svg class="svg-icon sm" style="color: var(--mut); flex-shrink: 0;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="input-search-files" class="prompt-area" style="font-size: 12px;" placeholder="Search uploaded files...">
+              </div>
+
               <div style="display: flex; gap: 8px;">
                 <button class="btn-neumorph" id="btn-batch-zip" disabled style="padding: 5px 12px; font-size: 11.5px;">
                   <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -505,22 +536,22 @@
                 <div class="metric-tile">
                   <span class="metric-label">System RAM</span>
                   <div class="metric-value" id="hw-ram-val">Loading...</div>
-                  <span class="metric-sub" id="hw-ram-sub">Target for Model Allocations</span>
+                  <span class="metric-sub" id="hw-ram-sub">RAM Capacity</span>
                 </div>
                 <div class="metric-tile">
                   <span class="metric-label">CPU Cores</span>
                   <div class="metric-value" id="hw-cpu-val">Loading...</div>
-                  <span class="metric-sub">Logical Worker Threads</span>
+                  <span class="metric-sub">Worker Threads</span>
                 </div>
                 <div class="metric-tile">
                   <span class="metric-label">Free Storage</span>
                   <div class="metric-value" id="hw-disk-val">Loading...</div>
-                  <span class="metric-sub">On Main Local Drive</span>
+                  <span class="metric-sub">Local Disk Space</span>
                 </div>
                 <div class="metric-tile">
-                  <span class="metric-label">Active in Memory</span>
-                  <div class="metric-value" id="hw-active-model-val" style="font-size: 13px; font-weight: 700; color: var(--acc);">Internal Engine</div>
-                  <button class="btn-neumorph danger" id="btn-unload-model-ram" style="margin-top: 6px; padding: 3px 8px; font-size: 11px; width: 100%;">Unload from RAM</button>
+                  <span class="metric-label">Active Memory</span>
+                  <div class="metric-value" id="hw-active-model-val" style="font-size: 13px; font-weight: 700; color: var(--acc);">Built-in Engine</div>
+                  <button class="btn-neumorph danger" id="btn-unload-model-ram" style="margin-top: 6px; padding: 3px 8px; font-size: 11px; width: 100%;">Unload RAM</button>
                 </div>
               </div>
             </div>
@@ -822,8 +853,82 @@
       </div>
     </div>
 
+    <!-- Live Portal Iframe Modal -->
+    <div class="modal-backdrop" id="portal-iframe-modal" style="z-index: 9000;">
+      <div class="modal-card" style="max-width: 1100px; width: 95%; height: 85vh; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg class="svg-icon sm" style="color: var(--emerald);" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <div>
+              <strong style="font-size: 15px; color: var(--ink);">Government Procurement Portal (GeM Live Simulation)</strong>
+              <span style="font-size: 11.5px; color: var(--muted); display: block;">Air-Gapped Sovereign Audit Target &bull; http://127.0.0.1:8001/portal/gem-tenders</span>
+            </div>
+          </div>
+          <button class="btn-neumorph" id="btn-close-portal-iframe" style="padding: 6px 14px; font-size: 12px;">Close</button>
+        </div>
+        <div style="flex: 1; border-radius: var(--r-tile); overflow: hidden; border: 1px solid var(--line); background: var(--bg);">
+          <iframe id="portal-live-frame" src="/portal/gem-tenders" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat History Modal: Organised by User Profile -> Date -> Time -->
+    <div class="modal-backdrop" id="history-modal" style="z-index: 9500;">
+      <div class="modal-card" style="max-width: 880px; width: 92%; max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(91, 108, 249, 0.12); color: var(--acc); display: grid; place-items: center;">
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--ink);">Chat &amp; Inquiry History</h3>
+              <span style="font-size: 11.5px; color: var(--muted);" id="history-profile-subtitle">Stored under User Profile &bull; Grouped by Date &amp; Time</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-neumorph danger" id="btn-clear-chat-history" style="padding: 6px 12px; font-size: 11.5px;">Clear History</button>
+            <button class="btn-neumorph" id="btn-close-history" style="padding: 6px 14px; font-size: 12px;">Close</button>
+          </div>
+        </div>
+
+        <div style="padding: 12px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: center; background: var(--bg-card);">
+          <div style="font-size: 12px; font-weight: 600; color: var(--muted);">Active User Profile:</div>
+          <div class="tag-sih" id="history-active-profile-tag" style="color: var(--acc); font-weight: 700; font-size: 12px;">Senior Procurement Officer</div>
+          <div style="margin-left: auto; width: 260px;">
+            <div class="search-bar-defined">
+              <svg class="svg-icon sm search-bar-icon" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="history-search-filter" class="search-bar-input" placeholder="Filter messages...">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body" id="history-modal-body" style="padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px;">
+          <!-- Loaded dynamically via loadChatHistoryUI() -->
+          <div style="text-align: center; color: var(--muted); padding: 40px 0;">Loading chat history...</div>
+        </div>
+      </div>
+    </div>
+    <!-- Model Downloaded Pop-up Notification Modal -->
+    <div class="modal-overlay" id="model-downloaded-popup" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 10001; align-items: center; justify-content: center;">
+      <div class="modal-box" style="background: var(--bg); padding: 28px; border-radius: var(--r-card); box-shadow: var(--shadow-raised); max-width: 440px; width: 90%; text-align: center; border: 1px solid rgba(255,255,255,0.8); border-top: 4px solid var(--acc);">
+        <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(5, 150, 105, 0.14); color: var(--acc); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: var(--shadow-raised-sm);">
+          <svg class="svg-icon lg" viewBox="0 0 24 24" style="stroke: currentColor; fill: none; stroke-width: 2.5;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 8px;">Model Download Complete</h3>
+        <p id="model-downloaded-popup-text" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin-bottom: 22px; font-weight: 600;">
+          Model is downloaded and ready to use
+        </p>
+        <button id="btn-close-model-popup" class="btn-neumorph primary" style="width: 100%; justify-content: center; padding: 10px; font-size: 13px;">
+          OK &bull; Ready to Use
+        </button>
+      </div>
+    </div>
+
   </div>
 
-  <script src="/static/app.js?v=5.1"></script>
+  <script src="/static/app.js?v=5.2"></script>
 </body>
 </html>

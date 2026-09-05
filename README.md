@@ -58,7 +58,7 @@ Execute the launcher script or run:
 ```bash
 python server.py
 ```
-The FastAPI backend server will launch at `http://127.0.0.1:8001`.
+The FastAPI backend server will launch at `http://127.0.0.1:8001 + int 50`.
 
 ### Viewing the Presentation UI
 Open `index.html` directly in any standard web browser to view the 12-slide executive presentation.

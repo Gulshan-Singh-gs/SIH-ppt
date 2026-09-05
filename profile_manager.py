@@ -14,6 +14,7 @@ from typing import Dict, Any, Optional, Tuple
 VAULT_DIR = Path(__file__).resolve().parent / "output" / ".vault"
 PROFILE_FILE = VAULT_DIR / "profile.json"
 PHYSICAL_RECOVERY_FILE = VAULT_DIR / "recovery.key"
+CHAT_HISTORY_FILE = VAULT_DIR / "chat_history.json"
 
 
 class ProfileManager:
@@ -220,3 +221,84 @@ class ProfileManager:
     def get_physical_token_path(self) -> str:
         """Returns the absolute path to the local recovery key on disk."""
         return str(PHYSICAL_RECOVERY_FILE)
+
+    def save_chat_message(
+        self,
+        user_query: str,
+        assistant_response: str,
+        profile_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Stores user chat history hierarchically:
+        User Profile -> Date (YYYY-MM-DD) -> Entry with Time (HH:MM:SS), query, and response.
+        """
+        import datetime
+        now = datetime.datetime.now()
+        date_str = now.strftime("%Y-%m-%d")
+        time_str = now.strftime("%H:%M:%S")
+
+        if not profile_name:
+            p = self.get_public_profile()
+            profile_name = p.get("name") or "Senior Procurement Officer"
+
+        history = self.get_all_chat_history()
+        if profile_name not in history:
+            history[profile_name] = {}
+
+        if date_str not in history[profile_name]:
+            history[profile_name][date_str] = []
+
+        entry = {
+            "id": f"chat_{int(now.timestamp())}_{secrets.token_hex(4)}",
+            "profile_name": profile_name,
+            "date": date_str,
+            "time": time_str,
+            "iso_timestamp": now.isoformat(),
+            "user_query": user_query,
+            "assistant_response": assistant_response
+        }
+        history[profile_name][date_str].append(entry)
+
+        try:
+            with open(CHAT_HISTORY_FILE, "w", encoding="utf-8") as f:
+                json.dump(history, f, indent=2)
+        except Exception as e:
+            print(f"Error saving chat history: {e}")
+
+        return entry
+
+    def get_all_chat_history(self) -> Dict[str, Any]:
+        """Loads the full hierarchical chat history tree from disk."""
+        if not CHAT_HISTORY_FILE.exists():
+            return {}
+        try:
+            with open(CHAT_HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+
+    def get_profile_chat_history(self, profile_name: Optional[str] = None) -> Dict[str, Any]:
+        """Returns chat history for a specific profile or the active profile."""
+        if not profile_name:
+            p = self.get_public_profile()
+            profile_name = p.get("name") or "Senior Procurement Officer"
+        history = self.get_all_chat_history()
+        return history.get(profile_name, {})
+
+    def clear_chat_history(self, profile_name: Optional[str] = None) -> bool:
+        """Clears chat history for a profile or completely."""
+        if not CHAT_HISTORY_FILE.exists():
+            return True
+        try:
+            if not profile_name:
+                with open(CHAT_HISTORY_FILE, "w", encoding="utf-8") as f:
+                    json.dump({}, f, indent=2)
+            else:
+                history = self.get_all_chat_history()
+                if profile_name in history:
+                    history[profile_name] = {}
+                    with open(CHAT_HISTORY_FILE, "w", encoding="utf-8") as f:
+                        json.dump(history, f, indent=2)
+            return True
+        except Exception:
+            return False

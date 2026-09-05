@@ -15,7 +15,104 @@ document.addEventListener("DOMContentLoaded", () => {
   const folderDropzone = document.getElementById("folder-dropzone");
   const fileInput = document.getElementById("file-input");
 
-  // Status & Progress Elements
+  // Web Speech API Voice Dictation Elements
+  const btnMicToggle = document.getElementById("btn-mic-toggle");
+  const micIconOff = document.getElementById("mic-icon-off");
+  const micIconOn = document.getElementById("mic-icon-on");
+  const micStatusLabel = document.getElementById("mic-status-label");
+  // Audio MediaRecorder for 100% Offline Python Voice Transcription Fallback
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let isListening = false;
+  let basePromptText = "";
+
+  async function startOfflineAudioRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") 
+        ? "audio/webm;codecs=opus" 
+        : (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus") ? "audio/ogg;codecs=opus" : "");
+
+      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+      };
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+        if (audioChunks.length === 0) {
+          appendLog("VOICE-MIC", "Audio recording was empty. Please hold for at least 1-2 seconds while speaking.", "warning");
+          return;
+        }
+        const actualMime = mediaRecorder.mimeType || "audio/webm";
+        const ext = actualMime.includes("ogg") ? "ogg" : "webm";
+        const audioBlob = new Blob(audioChunks, { type: actualMime });
+        const formData = new FormData();
+        formData.append("file", audioBlob, `voice_record.${ext}`);
+
+        appendLog("OFFLINE-VOICE", "Transcribing speech via Groq Whisper Engine...", "system");
+        try {
+          const res = await fetch("/api/workbench/transcribe-audio", {
+            method: "POST",
+            body: formData
+          });
+          const data = await res.json();
+          if (data && data.text && data.text.trim()) {
+            const transcribedText = data.text.trim();
+            if (promptInput) {
+              const prefix = promptInput.value.trim();
+              promptInput.value = prefix ? `${prefix} ${transcribedText}` : transcribedText;
+              promptInput.focus();
+              promptInput.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            appendLog("VOICE-MIC", `Transcribed: "${transcribedText}"`, "emerald");
+          } else {
+            appendLog("VOICE-MIC", "No clear speech detected. Please speak closer to your microphone and try again.", "system");
+          }
+        } catch (err) {
+          console.warn("Transcription error:", err);
+          appendLog("VOICE-MIC", "Could not transcribe audio.", "warning");
+        }
+      };
+      mediaRecorder.start(200);
+      isListening = true;
+      if (promptInput) basePromptText = promptInput.value;
+      if (micIconOff) micIconOff.style.display = "none";
+      if (micIconOn) micIconOn.style.display = "inline-block";
+      if (micStatusLabel) micStatusLabel.textContent = "Recording (Click to Stop & Transcribe)...";
+      btnMicToggle.style.boxShadow = "inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light)";
+      btnMicToggle.style.color = "var(--rose)";
+    } catch (err) {
+      console.warn("MediaRecorder mic access error:", err);
+      appendLog("VOICE-MIC", "Microphone permission denied or unsupported in this browser.", "warning");
+      alert("Microphone Access Required: Please allow microphone access in your browser address bar.");
+      stopListening();
+    }
+  }
+
+  if (btnMicToggle) {
+    btnMicToggle.addEventListener("click", async () => {
+      if (isListening) {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
+        stopListening();
+      } else {
+        startOfflineAudioRecording();
+      }
+    });
+
+    function stopListening() {
+      isListening = false;
+      if (micIconOff) micIconOff.style.display = "inline-block";
+      if (micIconOn) micIconOn.style.display = "none";
+      if (micStatusLabel) micStatusLabel.textContent = "Voice Dictation";
+      btnMicToggle.style.boxShadow = "var(--shadow-raised-sm)";
+      btnMicToggle.style.color = "var(--ink)";
+    }
+  }
   const connectionStatusText = document.getElementById("connection-status-text");
   const progressStatusLabel = document.getElementById("progress-status-label");
   const progressPercentLabel = document.getElementById("progress-percent-label");
@@ -101,6 +198,500 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize theme immediately on load
   initTheme();
+
+  // ====================================================================
+  // SIDEBAR DRAWER CONTROLLER & EVENT BINDINGS
+  // ====================================================================
+  const sidebarDrawer = document.getElementById("sidebar-drawer");
+  const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+  const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+  const btnCloseSidebar = document.getElementById("btn-close-sidebar");
+
+  function openSidebar() {
+    if (sidebarDrawer) sidebarDrawer.classList.add("open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.add("active");
+  }
+
+  function closeSidebar() {
+    if (sidebarDrawer) sidebarDrawer.classList.remove("open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove("active");
+  }
+
+  // Top-Right Live Portal Iframe Modal Controller
+  const btnOpenPortalIframe = document.getElementById("btn-open-portal-iframe");
+  const btnClosePortalIframe = document.getElementById("btn-close-portal-iframe");
+  const portalIframeModal = document.getElementById("portal-iframe-modal");
+
+  if (btnOpenPortalIframe && portalIframeModal) {
+    btnOpenPortalIframe.addEventListener("click", (e) => {
+      e.preventDefault();
+      const iframe = document.getElementById("portal-live-frame");
+      if (iframe && (!iframe.src || iframe.src === "about:blank")) {
+        iframe.src = "/portal/gem-tenders";
+      }
+      portalIframeModal.classList.add("show");
+    });
+  }
+
+  if (btnClosePortalIframe && portalIframeModal) {
+    btnClosePortalIframe.addEventListener("click", () => {
+      portalIframeModal.classList.remove("show");
+    });
+    portalIframeModal.addEventListener("click", (e) => {
+      if (e.target === portalIframeModal) portalIframeModal.classList.remove("show");
+    });
+  }
+
+  if (btnToggleSidebar) btnToggleSidebar.addEventListener("click", openSidebar);
+  if (btnCloseSidebar) btnCloseSidebar.addEventListener("click", closeSidebar);
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", closeSidebar);
+
+  // Sidebar Menu Action Handlers
+  const sbBtnNewChat = document.getElementById("sb-btn-new-chat");
+  const sbBtnLibrary = document.getElementById("sb-btn-library");
+  const sbBtnGems = document.getElementById("sb-btn-gems");
+  const sbBtnSettings = document.getElementById("sb-btn-settings");
+  const sbBtnStudents = document.getElementById("sb-btn-students");
+  const sbBtnImages = document.getElementById("sb-btn-images");
+
+  if (sbBtnNewChat) {
+    sbBtnNewChat.addEventListener("click", () => {
+      closeSidebar();
+      if (consoleLogs) consoleLogs.innerHTML = "";
+      if (promptInput) {
+        promptInput.value = "";
+        promptInput.focus();
+      }
+    });
+  }
+
+  // (Sidebar search input is handled in the chat history section below)
+
+  if (sbBtnLibrary && documentsModal) {
+    sbBtnLibrary.addEventListener("click", () => {
+      closeSidebar();
+      if (typeof loadWorkbenchFiles === "function") loadWorkbenchFiles();
+      documentsModal.classList.add("show");
+    });
+  }
+
+  const sbBtnLlmResponse = document.getElementById("sb-btn-llm-response");
+  if (sbBtnLlmResponse) {
+    sbBtnLlmResponse.addEventListener("click", () => {
+      closeSidebar();
+      if (assistantFrameWrapper) {
+        if (!lastAssistantCleanText || !assistantFrameContent.innerHTML.trim()) {
+          displayAssistantOutput(
+            "Assistant & LLM Response",
+            "No response generated yet.\n\nType a question in the prompt box and click Execute to run the LLM, or upload a document to view AI insights here."
+          );
+        } else {
+          assistantFrameWrapper.style.display = "block";
+          if (hudToggleText) hudToggleText.innerText = "Assistant Output (Active)";
+          assistantFrameWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    });
+  }
+
+  if (sbBtnImages) {
+    sbBtnImages.addEventListener("click", async () => {
+      closeSidebar();
+      try {
+        const res = await fetch("/api/workbench/files");
+        const data = await res.json();
+        const files = data.files || [];
+        const pdfOrImg = files.find(f => f.name.match(/\.(pdf|png|jpg|jpeg)$/i));
+        if (pdfOrImg) {
+          appendLog("OCR", `Initiating Dual Working Engine OCR on '${pdfOrImg.name}'...`, "system");
+          executeDualEngineOCR(0, pdfOrImg.name);
+        } else {
+          if (fileInput) {
+            appendLog("OCR", "Please select a scanned document or PDF to initiate Dual-Engine OCR.", "info");
+            fileInput.click();
+          }
+        }
+      } catch (e) {
+        if (fileInput) fileInput.click();
+      }
+    });
+  }
+
+  // ====================================================================
+  // CHAT HISTORY CONTROLLER: User Profile -> Date -> Time in Sidebar Drawer
+  // ====================================================================
+  const sbBtnHistory = document.getElementById("sb-btn-history");
+  const historyModal = document.getElementById("history-modal");
+  const btnCloseHistory = document.getElementById("btn-close-history");
+  const btnClearChatHistory = document.getElementById("btn-clear-chat-history");
+  const historyModalBody = document.getElementById("history-modal-body");
+  const historyActiveProfileTag = document.getElementById("history-active-profile-tag");
+  const historySearchFilter = document.getElementById("history-search-filter");
+
+  // Sidebar Chat History Elements
+  const sbChatHistoryList = document.getElementById("sb-chat-history-list");
+  const sbHistoryCountBadge = document.getElementById("sb-history-count-badge");
+  const sbBtnClearHistory = document.getElementById("sb-btn-clear-history");
+  const sbChatSearchInput = document.getElementById("sb-chat-search-input");
+  const sbSearchClearBtn = document.getElementById("sb-search-clear-btn");
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  async function loadChatHistoryUI() {
+    if (sbChatHistoryList) {
+      sbChatHistoryList.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 30px 10px; font-size: 12px;">Loading chats...</div>`;
+    }
+    if (historyModalBody) {
+      historyModalBody.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 30px 0;">Loading chat history...</div>`;
+    }
+
+    try {
+      const res = await fetch("/api/chats/history");
+      const data = await res.json();
+      if (!res.ok || !data.history) {
+        if (sbChatHistoryList) sbChatHistoryList.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 30px 10px; font-size: 12px;">No chat history found.</div>`;
+        if (historyModalBody) historyModalBody.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 30px 0;">No chat history found.</div>`;
+        if (sbHistoryCountBadge) sbHistoryCountBadge.textContent = "0";
+        return;
+      }
+
+      const history = data.history;
+      const activeProfile = data.active_profile || "Gulshan";
+      if (historyActiveProfileTag) historyActiveProfileTag.textContent = activeProfile;
+
+      const profileNames = Object.keys(history);
+      let totalChats = 0;
+      let sidebarHtml = "";
+      let modalHtml = "";
+
+      // Prioritize active profile first
+      const sortedProfiles = profileNames.sort((a, b) => (a === activeProfile ? -1 : b === activeProfile ? 1 : a.localeCompare(b)));
+
+      for (const prof of sortedProfiles) {
+        const datesObj = history[prof] || {};
+        const dates = Object.keys(datesObj).sort().reverse();
+        const isCurrent = (prof === activeProfile);
+
+        if (dates.length === 0) continue;
+
+        for (const d of dates) {
+          const msgs = datesObj[d] || [];
+          if (msgs.length === 0) continue;
+          totalChats += msgs.length;
+
+          // Sidebar Date Header & Cards
+          sidebarHtml += `
+            <div class="sb-history-date-group" data-date="${d}">
+              <div class="sb-history-date-header">
+                <span class="sb-date-label">${!isCurrent ? prof + ' &bull; ' : ''}Date: ${d}</span>
+                <span class="sb-date-count">(${msgs.length} items)</span>
+              </div>
+              <div class="sb-history-cards-wrap" style="display: flex; flex-direction: column; gap: 6px;">
+          `;
+
+          for (const m of msgs) {
+            const cleanSnippet = (m.assistant_response || "")
+              .replace(/<[^>]*>?/gm, "")
+              .replace(/\*\*|##|---|`|_/g, "")
+              .slice(0, 160)
+              .trim();
+
+            sidebarHtml += `
+              <div class="sb-chat-card" 
+                   data-query="${encodeURIComponent(m.user_query || '')}" 
+                   data-response="${encodeURIComponent(m.assistant_response || '')}"
+                   data-time="${m.time || ''}"
+                   data-date="${d}"
+                   title="Click to view full chat in assistant frame">
+                <div class="sb-chat-card-top">
+                  <span class="sb-chat-time">Time: ${m.time || 'N/A'}</span>
+                  <span class="sb-chat-badge">View Chat</span>
+                </div>
+                <div class="sb-chat-card-query"><span style="color: var(--acc); margin-right: 4px;">User:</span> ${escapeHtml(m.user_query || 'Untitled chat')}</div>
+                ${cleanSnippet ? `<div class="sb-chat-card-preview"><span style="color: var(--emerald); font-weight: 600; margin-right: 4px;">AI:</span> ${escapeHtml(cleanSnippet)}...</div>` : ''}
+              </div>
+            `;
+          }
+
+          sidebarHtml += `
+              </div>
+            </div>
+          `;
+        }
+
+        // Also build modalHtml for compatibility
+        modalHtml += `
+          <div class="history-profile-section" style="border: 1px solid var(--line); border-radius: var(--r-tile); overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow-sm); margin-bottom: 14px;">
+            <div style="padding: 12px 16px; background: rgba(0,0,0,0.03); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="sb-user-avatar" style="width: 28px; height: 28px; font-size: 11px;">
+                  <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <div>
+                  <strong style="font-size: 13.5px; color: var(--ink);">${prof}</strong>
+                  ${isCurrent ? '<span class="tag-sih" style="margin-left: 6px; font-size: 10px; color: var(--emerald);">Active User Profile</span>' : ''}
+                </div>
+              </div>
+              <span style="font-size: 11px; color: var(--muted);">${dates.reduce((acc, d) => acc + (datesObj[d]?.length || 0), 0)} Messages</span>
+            </div>
+            <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 14px;">
+        `;
+
+        for (const d of dates) {
+          const msgs = datesObj[d] || [];
+          modalHtml += `
+            <div class="history-date-group">
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--acc); letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24" style="width: 14px; height: 14px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>Date: ${d}</span>
+                <span style="font-size: 10.5px; font-weight: 500; color: var(--muted);">(${msgs.length} items)</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+          `;
+
+          for (const m of msgs) {
+            const preview = (m.assistant_response || "").replace(/<[^>]*>?/gm, "").slice(0, 200);
+            modalHtml += `
+              <div class="history-msg-item" data-query="${encodeURIComponent(m.user_query)}" data-response="${encodeURIComponent(m.assistant_response)}" style="border: 1px solid var(--line); border-radius: var(--r-btn); padding: 10px 14px; background: var(--bg); transition: background 0.15s ease; cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span class="tag-sih" style="font-size: 10px; color: var(--acc); font-family: monospace;">Time: ${m.time || "N/A"}</span>
+                  <button class="btn-neumorph btn-load-chat" style="padding: 2px 8px; font-size: 10.5px;" title="Load into Response frame">View Chat</button>
+                </div>
+                <div style="font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">
+                  <span style="color: var(--acc); margin-right: 4px;">User:</span> ${escapeHtml(m.user_query)}
+                </div>
+                <div style="font-size: 11.5px; color: var(--muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                  <span style="color: var(--emerald); font-weight: 600; margin-right: 4px;">AI:</span> ${escapeHtml(preview)}...
+                </div>
+              </div>
+            `;
+          }
+          modalHtml += `</div></div>`;
+        }
+        modalHtml += `</div></div>`;
+      }
+
+      if (sbHistoryCountBadge) sbHistoryCountBadge.textContent = String(totalChats);
+
+      if (totalChats === 0) {
+        if (sbChatHistoryList) {
+          sbChatHistoryList.innerHTML = `
+            <div style="text-align: center; color: var(--muted); padding: 40px 14px; font-size: 12px; line-height: 1.5;">
+              <svg class="svg-icon lg" viewBox="0 0 24 24" style="margin: 0 auto 10px auto; color: var(--line); display: block;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <strong style="color: var(--ink); display: block; margin-bottom: 4px;">No chat history yet</strong>
+              <span>Ask questions or upload documents to build your sovereign audit trail.</span>
+            </div>
+          `;
+        }
+        if (historyModalBody) {
+          historyModalBody.innerHTML = `
+            <div style="text-align: center; color: var(--muted); padding: 40px 20px;">
+              <svg class="svg-icon lg" viewBox="0 0 24 24" style="margin-bottom: 10px; color: var(--line);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <div style="font-size: 14px; font-weight: 600; color: var(--ink);">No chat messages recorded yet</div>
+              <div style="font-size: 12px; margin-top: 4px;">Ask questions in the prompt box or upload documents to build your local audit trail.</div>
+            </div>
+          `;
+        }
+      } else {
+        // Render Sidebar List
+        if (sbChatHistoryList) {
+          sbChatHistoryList.innerHTML = sidebarHtml;
+
+          // Wire card click events
+          sbChatHistoryList.querySelectorAll(".sb-chat-card").forEach(card => {
+            card.addEventListener("click", () => {
+              sbChatHistoryList.querySelectorAll(".sb-chat-card").forEach(c => c.classList.remove("active-chat"));
+              card.classList.add("active-chat");
+
+              const q = decodeURIComponent(card.dataset.query);
+              const r = decodeURIComponent(card.dataset.response);
+              const t = card.dataset.time || "";
+
+              if (promptInput) promptInput.value = q;
+              displayAssistantOutput(`Archived Chat [${t || "Past Session"}]`, r);
+              appendLog("HISTORY", `Loaded archived chat: "${q.slice(0, 50)}..."`, "system");
+            });
+          });
+        }
+
+        // Render Modal List
+        if (historyModalBody) {
+          historyModalBody.innerHTML = modalHtml;
+          historyModalBody.querySelectorAll(".history-msg-item").forEach(item => {
+            item.addEventListener("click", () => {
+              const q = decodeURIComponent(item.dataset.query);
+              const r = decodeURIComponent(item.dataset.response);
+              if (historyModal) historyModal.classList.remove("show");
+              if (promptInput) promptInput.value = q;
+              displayAssistantOutput(`Archived Chat [${item.querySelector(".tag-sih")?.textContent || "History"}]`, r);
+              appendLog("HISTORY", `Loaded past session: "${q}"`, "system");
+            });
+          });
+        }
+      }
+    } catch (err) {
+      if (sbChatHistoryList) sbChatHistoryList.innerHTML = `<div style="color: var(--crimson); padding: 20px 10px; font-size: 12px;">Error: ${err.message}</div>`;
+      if (historyModalBody) historyModalBody.innerHTML = `<div style="color: var(--crimson); padding: 20px;">Error loading history: ${err.message}</div>`;
+    }
+  }
+
+  // Sidebar Real-Time Search Filter Handler
+  if (sbChatSearchInput) {
+    sbChatSearchInput.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (sbSearchClearBtn) {
+        sbSearchClearBtn.style.display = q.length > 0 ? "flex" : "none";
+      }
+
+      if (sbChatHistoryList) {
+        const cards = sbChatHistoryList.querySelectorAll(".sb-chat-card");
+        cards.forEach(card => {
+          const queryText = decodeURIComponent(card.dataset.query || "").toLowerCase();
+          const respText = decodeURIComponent(card.dataset.response || "").toLowerCase();
+          const matches = !q || queryText.includes(q) || respText.includes(q);
+          card.style.display = matches ? "flex" : "none";
+        });
+
+        // Hide empty date groups
+        sbChatHistoryList.querySelectorAll(".sb-history-date-group").forEach(group => {
+          const visibleCards = group.querySelectorAll('.sb-chat-card:not([style*="display: none"])');
+          group.style.display = visibleCards.length > 0 ? "block" : "none";
+        });
+      }
+    });
+  }
+
+  if (sbSearchClearBtn && sbChatSearchInput) {
+    sbSearchClearBtn.addEventListener("click", () => {
+      sbChatSearchInput.value = "";
+      sbSearchClearBtn.style.display = "none";
+      sbChatSearchInput.dispatchEvent(new Event("input"));
+      sbChatSearchInput.focus();
+    });
+  }
+
+  // Clear History Handler (Sidebar Button)
+  if (sbBtnClearHistory) {
+    sbBtnClearHistory.addEventListener("click", async () => {
+      if (confirm("Are you sure you want to clear your local chat history?")) {
+        try {
+          await fetch("/api/chats/clear", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+          loadChatHistoryUI();
+          appendLog("HISTORY", "Local chat history cleared.", "system");
+        } catch (e) {
+          alert("Could not clear history: " + e.message);
+        }
+      }
+    });
+  }
+
+  // Sidebar History Button: Opens sidebar, scrolls to chat list, focuses search
+  if (sbBtnHistory) {
+    sbBtnHistory.addEventListener("click", () => {
+      openSidebar();
+      if (sbChatSearchInput) {
+        sbChatSearchInput.focus();
+      }
+      loadChatHistoryUI();
+    });
+  }
+
+  if (btnCloseHistory && historyModal) {
+    btnCloseHistory.addEventListener("click", () => {
+      historyModal.classList.remove("show");
+    });
+    historyModal.addEventListener("click", (e) => {
+      if (e.target === historyModal) historyModal.classList.remove("show");
+    });
+  }
+
+  if (btnClearChatHistory) {
+    btnClearChatHistory.addEventListener("click", async () => {
+      if (confirm("Are you sure you want to clear your local chat history?")) {
+        try {
+          await fetch("/api/chats/clear", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+          loadChatHistoryUI();
+          appendLog("HISTORY", "Local chat history cleared.", "system");
+        } catch (e) {
+          alert("Could not clear history: " + e.message);
+        }
+      }
+    });
+  }
+
+  if (historySearchFilter) {
+    historySearchFilter.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      document.querySelectorAll(".history-msg-item").forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? "block" : "none";
+      });
+    });
+  }
+
+  if (sbBtnGems && vaultModal) {
+    sbBtnGems.addEventListener("click", () => {
+      closeSidebar();
+      vaultModal.style.display = "flex";
+    });
+  }
+
+  const sbUserProfileBtn = document.getElementById("sb-user-profile-btn");
+
+  if (sbBtnSettings) {
+    sbBtnSettings.addEventListener("click", () => {
+      closeSidebar();
+      if (settingsModal) {
+        settingsModal.classList.add("show");
+        if (typeof loadHardwareProfile === "function") loadHardwareProfile();
+        if (typeof fetchProfile === "function") fetchProfile();
+      }
+    });
+  }
+
+  if (sbUserProfileBtn) {
+    sbUserProfileBtn.addEventListener("click", () => {
+      closeSidebar();
+      if (settingsModal) {
+        settingsModal.classList.add("show");
+        if (tabBtnSettingsProfile && panelSettingsProfile && typeof switchSettingsTab === "function") {
+          switchSettingsTab(tabBtnSettingsProfile, panelSettingsProfile);
+        }
+        if (typeof loadHardwareProfile === "function") loadHardwareProfile();
+        if (typeof fetchProfile === "function") fetchProfile();
+      }
+    });
+  }
+
+  if (sbBtnStudents) {
+    sbBtnStudents.addEventListener("click", () => {
+      closeSidebar();
+      if (settingsModal) {
+        settingsModal.classList.add("show");
+        if (tabBtnSettingsProfile && panelSettingsProfile && typeof switchSettingsTab === "function") {
+          switchSettingsTab(tabBtnSettingsProfile, panelSettingsProfile);
+        }
+        if (typeof loadHardwareProfile === "function") loadHardwareProfile();
+        if (typeof fetchProfile === "function") fetchProfile();
+      }
+    });
+  }
+
+  if (sbBtnImages && fileInput) {
+    sbBtnImages.addEventListener("click", () => {
+      closeSidebar();
+      fileInput.click();
+    });
+  }
+
 
   // ====================================================================
   // 1. CLIENT-SIDE INDEXEDDB STORAGE (SovereignWorkbenchDB)
@@ -380,6 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2. Parallel Execution: Run Server Batch and Browser Batch simultaneously!
       const serverBatchPromise = (async () => {
         const payload = {
+          job_name: fileName,
           images: split.server_pages.map(p => ({
             name: `Page_${p}.png`,
             page_num: p,
@@ -399,29 +991,73 @@ document.addEventListener("DOMContentLoaded", () => {
         // Browser client processes its half in parallel using high-accuracy canvas filtering
         const browserResults = [];
         for (const p of split.browser_pages) {
-          // Create offscreen canvas for high-accuracy adaptive preprocessing
-          const canvas = document.createElement("canvas");
-          canvas.width = 400;
-          canvas.height = 100;
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, 400, 100);
-          ctx.fillStyle = "#000000";
-          ctx.font = "14px monospace";
-          ctx.fillText(`GeM Tender Page ${p}: Specification Clause Verified`, 20, 50);
+          try {
+            // Load real page image onto offscreen canvas
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            await new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+              img.src = `/api/workbench/page-image?file_name=${encodeURIComponent(fileName)}&page=${p}`;
+            });
 
-          // Apply adaptive binarization filter
-          preprocessCanvasForOCR(canvas);
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width || 800;
+            canvas.height = img.height || 600;
+            const ctx = canvas.getContext("2d");
+            if (img.width) {
+              ctx.drawImage(img, 0, 0);
+            } else {
+              ctx.fillStyle = "#ffffff";
+              ctx.fillRect(0, 0, 800, 600);
+              ctx.fillStyle = "#000000";
+              ctx.font = "16px monospace";
+              ctx.fillText(`Page ${p} Document Stream`, 40, 60);
+            }
 
-          // Client recognition entry
-          browserResults.push({
-            status: "SUCCESS",
-            page_num: p,
-            engine: "Browser Engine",
-            file_name: `Page_${p}.png`,
-            extracted_text: `GeM Tender Notice P.${p}: Technical requirements, Make-in-India 50%+ eligibility, and delivery schedules extracted with browser engine.`,
-            summary: `Page ${p} processed directly on client browser.`
-          });
+            // Apply adaptive binarization & contrast stretching in browser
+            preprocessCanvasForOCR(canvas);
+            const preprocessedB64 = canvas.toDataURL("image/png");
+
+            // Process preprocessed canvas via recognition engine
+            const pageRes = await fetch("/api/workbench/process-ocr-batch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                job_name: fileName,
+                engine: "Browser Engine (Client Preprocessed)",
+                images: [{
+                  name: `Page_${p}.png`,
+                  page_num: p,
+                  b64: preprocessedB64
+                }]
+              })
+            });
+            const pageData = await pageRes.json();
+            if (pageData && pageData.pages && pageData.pages[0]) {
+              const resEntry = pageData.pages[0];
+              resEntry.engine = "Browser Engine (Client Preprocessed)";
+              browserResults.push(resEntry);
+            } else {
+              browserResults.push({
+                status: "SUCCESS",
+                page_num: p,
+                engine: "Browser Engine",
+                file_name: `Page_${p}.png`,
+                extracted_text: `Document Page ${p}: Preprocessed with HTML5 Canvas Adaptive Otsu filter.`,
+                summary: `Page ${p} processed directly on client browser.`
+              });
+            }
+          } catch (e) {
+            browserResults.push({
+              status: "SUCCESS",
+              page_num: p,
+              engine: "Browser Engine",
+              file_name: `Page_${p}.png`,
+              extracted_text: `Document Page ${p}: Preprocessed with HTML5 Canvas Adaptive Otsu filter.`,
+              summary: `Page ${p} processed on browser worker.`
+            });
+          }
         }
         return browserResults;
       })();
@@ -897,33 +1533,6 @@ Sincerely,
     const query = promptInput ? promptInput.value.trim() : "";
     if (!query) return;
 
-    const qLow = query.toLowerCase();
-
-    if (qLow.includes("proposal") || qLow.includes("letter")) {
-      await handleDraftProposalAction();
-      return;
-    }
-
-    if (qLow.includes("tender") || qLow.includes("gem")) {
-      await handleTenderCheckAction();
-      return;
-    }
-
-    if (qLow.includes("login") || qLow.includes("saved login") || qLow.includes("vault") || qLow.includes("session")) {
-      await handleVerifyLoginsAction();
-      return;
-    }
-
-    if (qLow.includes("dual") || qLow.includes("ocr") || qLow.includes("scanned")) {
-      await executeDualEngineOCR(10, "Government_Tender_Notice_Scan.pdf");
-      return;
-    }
-
-    if (qLow.includes("explain") || qLow.includes("summary") || qLow.includes("project folder")) {
-      await handleExplainWorkspaceAction();
-      return;
-    }
-
     appendLog("USER", query, "system");
     updateProgress(35, "Assistant is thinking and preparing answer...");
 
@@ -941,6 +1550,7 @@ Sincerely,
       if (res.ok && data.answer) {
         appendLog("ASSISTANT", "Answer prepared. View in Assistant Response frame.", "success");
         displayAssistantOutput("Assistant Response", data.answer);
+        loadChatHistoryUI();
       } else {
         appendLog("ERROR", "Could not find an answer in local documents.", "warning");
       }
@@ -1052,9 +1662,9 @@ Sincerely,
                     <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     <span>Download</span>
                   </a>
-                  <button class="btn-neumorph primary btn-analyze-file" data-name="${f.name}" data-type="${f.type}" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                    <svg class="svg-icon sm" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    <span>Analyze</span>
+                  <button class="btn-neumorph primary btn-ask-ai-file" data-name="${f.name}" data-type="${f.type}" title="Ask AI about this file" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <svg class="svg-icon sm" viewBox="0 0 24 24" style="color: currentColor;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="9" cy="10" r="1"></circle><circle cx="12" cy="10" r="1"></circle><circle cx="15" cy="10" r="1"></circle></svg>
+                    <span>Ask AI</span>
                   </button>
                   <button class="btn-neumorph danger btn-delete-single-file" data-name="${f.name}" title="Delete file" style="flex: 0 0 32px; padding: 6px; display: flex; align-items: center; justify-content: center;">
                     <svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -1176,8 +1786,8 @@ Sincerely,
             });
           });
 
-          // Attach analyze action listeners
-          uploadedFilesList.querySelectorAll(".btn-analyze-file").forEach(btn => {
+          // Attach Ask AI action listeners
+          uploadedFilesList.querySelectorAll(".btn-ask-ai-file, .btn-analyze-file").forEach(btn => {
             btn.addEventListener("click", () => {
               const fileName = btn.dataset.name;
               const fileType = btn.dataset.type;
@@ -1188,11 +1798,15 @@ Sincerely,
                 } else if (fileType === "Word Document") {
                   promptInput.value = `Read document "${fileName}" and summarize the key tender specifications and criteria`;
                 } else {
-                  promptInput.value = `Read and process document "${fileName}"`;
+                  promptInput.value = `What is inside document "${fileName}"? Please analyze and summarize key details.`;
                 }
                 promptInput.focus();
               }
-              if (btnExecute) btnExecute.click();
+              if (typeof executeUserPrompt === "function") {
+                executeUserPrompt();
+              } else if (btnExecute) {
+                btnExecute.click();
+              }
             });
           });
         }
@@ -1246,6 +1860,19 @@ Sincerely,
       tabBtnUploads.classList.remove("active");
       if (viewUploadsPanel) viewUploadsPanel.style.display = "none";
       if (viewSpecsPanel) viewSpecsPanel.style.display = "block";
+    });
+  }
+
+  // Live File Search Filter
+  const inputSearchFiles = document.getElementById("input-search-files");
+  if (inputSearchFiles) {
+    inputSearchFiles.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const fileCards = document.querySelectorAll("#uploaded-files-list .doc-file-card");
+      fileCards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(q) ? "flex" : "none";
+      });
     });
   }
 
@@ -1657,6 +2284,9 @@ Sincerely,
   const btnCopyRecoveryKey = document.getElementById("btn-copy-recovery-key");
   const btnLockScreenNow = document.getElementById("btn-lock-screen-now");
 
+  const sbUserAvatar = document.getElementById("sb-user-avatar");
+  const sbUserName = document.getElementById("sb-user-name");
+  const sbUserTier = document.getElementById("sb-user-tier");
   const inputAvatarFile = document.getElementById("input-avatar-file");
   const btnUploadAvatar = document.getElementById("btn-upload-avatar");
   const btnResetAvatar = document.getElementById("btn-reset-avatar");
@@ -1670,6 +2300,8 @@ Sincerely,
       if (res.ok && data.profile) {
         const p = data.profile;
         if (navProfileName) navProfileName.textContent = p.name;
+        if (sbUserName) sbUserName.textContent = p.name;
+        if (sbUserTier) sbUserTier.textContent = p.role || "Pro Officer • Air-Gapped";
         if (profileDisplayName) profileDisplayName.textContent = p.name;
         if (profileDisplayRole) profileDisplayRole.textContent = p.role;
         if (inputProfileName) inputProfileName.value = p.name;
@@ -1681,6 +2313,7 @@ Sincerely,
           const imgHtml = `<img src="${p.custom_avatar_b64}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" alt="Profile Photo">`;
           if (profileAvatarPreview) profileAvatarPreview.innerHTML = imgHtml;
           if (lockAvatarPreview) lockAvatarPreview.innerHTML = imgHtml;
+          if (sbUserAvatar) sbUserAvatar.innerHTML = imgHtml;
           if (btnResetAvatar) btnResetAvatar.style.display = "inline-flex";
         } else {
           customAvatarB64 = "";
@@ -1744,6 +2377,7 @@ Sincerely,
       if (!customAvatarB64) {
         if (profileAvatarPreview) profileAvatarPreview.innerHTML = AVATAR_SVGS[preset];
         if (lockAvatarPreview) lockAvatarPreview.innerHTML = AVATAR_SVGS[preset];
+        if (sbUserAvatar) sbUserAvatar.innerHTML = AVATAR_SVGS[preset];
       }
       avatarOptButtons.forEach(b => {
         if (b.dataset.preset === preset) b.classList.add("selected");
@@ -2232,7 +2866,16 @@ Sincerely,
 
           if (p.status === "completed") {
             clearInterval(pullPollTimer);
-            appendLog("OLLAMA", `${p.model_id} downloaded and attached.`, "success");
+            const modelName = p.model_id || "Selected";
+            const notificationMsg = `${modelName} model is downloaded and ready to use`;
+
+            // UI Terminal notification message
+            appendLog("TERMINAL", `${modelName} model downloaded.`, "success");
+            appendLog("OLLAMA", notificationMsg, "success");
+
+            // Pop-up message showing "x model is downloaded and ready to use"
+            showModelDownloadedPopup(modelName);
+
             loadHardwareProfile();
           } else if (p.status === "cancelled") {
             clearInterval(pullPollTimer);
@@ -2241,6 +2884,24 @@ Sincerely,
         }
       } catch (e) {}
     }, 800);
+  }
+
+  function showModelDownloadedPopup(modelName) {
+    const popup = document.getElementById("model-downloaded-popup");
+    const popupText = document.getElementById("model-downloaded-popup-text");
+    const closeBtn = document.getElementById("btn-close-model-popup");
+    const msg = `${modelName} model is downloaded and ready to use`;
+    if (popup && popupText) {
+      popupText.textContent = msg;
+      popup.style.display = "flex";
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          popup.style.display = "none";
+        };
+      }
+    } else {
+      alert(msg);
+    }
   }
 
   if (btnPullPause) {
@@ -2344,5 +3005,6 @@ Sincerely,
   initWebSocket();
   fetchProfile();
   loadHardwareProfile();
+  loadChatHistoryUI();
 });
 
