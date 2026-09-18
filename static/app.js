@@ -3018,6 +3018,7 @@ Sincerely,
   const panelSettingsDual = document.getElementById("panel-settings-dual");
   const panelSettingsDictation = document.getElementById("panel-settings-dictation");
   const panelSettingsAudit = document.getElementById("panel-settings-audit");
+  const panelSettingsSecurity = document.getElementById("panel-settings-security");
   const tabBtnSettingsLan = document.getElementById("tab-btn-settings-lan");
   const panelSettingsLan = document.getElementById("panel-settings-lan");
 

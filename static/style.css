@@ -1382,6 +1382,13 @@ textarea.prompt-area {
   transition: all 0.18s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  user-select: none;
+}
+
+.doc-tab-btn * {
+  pointer-events: none;
 }
 
 .doc-tab-btn:hover {
