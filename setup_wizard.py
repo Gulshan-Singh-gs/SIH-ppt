@@ -38,21 +38,17 @@ OLLAMA_WINDOWS_INSTALLER_URL = "https://ollama.com/download/OllamaSetup.exe"
 
 class ProvisioningWizard:
     def __init__(self):
-        # Enable High-DPI crisp font rendering on Windows
-        try:
-            import ctypes
-            # Shcore SetProcessDpiAwareness(1) -> System DPI Aware (prevents bitmap scaling blur)
-            try:
-                ctypes.windll.shcore.SetProcessDpiAwareness(1)
-            except Exception:
-                ctypes.windll.user32.SetProcessDPIAware()
-        except Exception:
-            pass
-
         self.root = tk.Tk()
         self.root.title("Sovereign AI Workbench — Automated Provisioning Wizard")
-        self.root.geometry("680x670")
-        self.root.resizable(False, False)
+        
+        # Center window nicely on screen
+        win_w, win_h = 660, 680
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+        pos_x = max(0, (screen_w - win_w) // 2)
+        pos_y = max(0, (screen_h - win_h) // 2)
+        self.root.geometry(f"{win_w}x{win_h}+{pos_x}+{pos_y}")
+        self.root.minsize(580, 620)
 
         # Style & Themes
         self.bg_color = "#f8fafc"
