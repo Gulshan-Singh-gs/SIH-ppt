@@ -1154,16 +1154,23 @@
                   </button>
                 </div>
 
-                <!-- Display Active Pairing PIN -->
-                <div id="active-pairing-code-box" style="display: none; padding: 14px; border-radius: var(--r-tile); background: rgba(91, 108, 249, 0.08); border: 1px dashed var(--acc); margin-top: 10px;">
-                  <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div>
-                      <span style="font-size: 11px; color: var(--muted); display: block;">Single-Use Pairing PIN (Expires in 5 minutes):</span>
-                      <strong id="display-pairing-pin" style="font-size: 24px; letter-spacing: 6px; font-family: var(--font-mono); color: var(--acc);">------</strong>
+                <!-- Display Active Pairing PIN & Instant QR Code -->
+                <div id="active-pairing-code-box" style="display: none; padding: 16px; border-radius: var(--r-tile); background: rgba(91, 108, 249, 0.07); border: 1px dashed var(--acc); margin-top: 12px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 220px;">
+                      <span style="font-size: 11px; color: var(--muted); display: block; margin-bottom: 2px;">Single-Use Pairing PIN (Expires in 5 mins):</span>
+                      <strong id="display-pairing-pin" style="font-size: 26px; letter-spacing: 6px; font-family: var(--font-mono); color: var(--acc); display: block; margin-bottom: 8px;">------</strong>
+                      <span style="font-size: 11px; color: var(--muted); display: block;">Or open URL manually:</span>
+                      <a id="display-pairing-url" href="#" target="_blank" style="font-size: 12px; font-weight: 700; color: var(--ink); text-decoration: underline; word-break: break-all;">http://ai-workbench.local:8001</a>
                     </div>
-                    <div style="text-align: right;">
-                      <span style="font-size: 11.5px; color: var(--muted); display: block;">On your other device, open:</span>
-                      <a id="display-pairing-url" href="#" target="_blank" style="font-size: 12px; font-weight: 700; color: var(--ink); text-decoration: underline;">http://ai-workbench.local:8001</a>
+                    
+                    <!-- QR Code Card -->
+                    <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; padding: 10px; border-radius: var(--r-tile); border: 1px solid var(--line); box-shadow: var(--shadow-sm);">
+                      <img id="display-pairing-qr" src="" alt="Pairing QR Code" style="width: 128px; height: 128px; display: block; border-radius: 4px; object-fit: contain;">
+                      <span style="font-size: 10.5px; font-weight: 600; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                        <svg class="svg-icon sm" viewBox="0 0 24 24" style="width: 12px; height: 12px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        Scan with Mobile / Tablet
+                      </span>
                     </div>
                   </div>
                 </div>

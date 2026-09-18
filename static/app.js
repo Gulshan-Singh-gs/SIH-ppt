@@ -4227,6 +4227,7 @@ Sincerely,
   const activePairingCodeBox = document.getElementById("active-pairing-code-box");
   const displayPairingPin = document.getElementById("display-pairing-pin");
   const displayPairingUrl = document.getElementById("display-pairing-url");
+  const displayPairingQr = document.getElementById("display-pairing-qr");
   const lanDevicesList = document.getElementById("lan-devices-list");
   const govLlmVal = document.getElementById("gov-llm-val");
   const govOcrVal = document.getElementById("gov-ocr-val");
@@ -4361,10 +4362,14 @@ Sincerely,
           if (displayPairingUrl) {
             const hostIp = (lanIpVal && lanIpVal.textContent) || "127.0.0.1";
             const port = (lanPortVal && lanPortVal.textContent) || "8001";
-            displayPairingUrl.textContent = `http://ai-workbench.local:${port}`;
-            displayPairingUrl.href = `http://${hostIp}:${port}`;
+            const pairUrl = data.pairing_url || `http://${hostIp}:${port}/?pin=${data.pairing_code}`;
+            displayPairingUrl.textContent = pairUrl;
+            displayPairingUrl.href = pairUrl;
           }
-          appendLog("SECURITY", "Generated single-use 6-digit PIN for remote device pairing (5 min expiration).", "success");
+          if (displayPairingQr && data.qr_code_uri) {
+            displayPairingQr.src = data.qr_code_uri;
+          }
+          appendLog("SECURITY", "Generated single-use 6-digit PIN and mobile QR Code for remote device pairing (5 min expiration).", "success");
         } else {
           alert(data.error || "Pairing code generation failed.");
         }
@@ -4413,6 +4418,18 @@ Sincerely,
       }
     });
   }
+
+  // Auto-detect PIN parameter from scanned QR code
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pinFromUrl = urlParams.get("pin");
+    if (pinFromUrl && inputRemotePairCode) {
+      inputRemotePairCode.value = pinFromUrl;
+      if (remotePairingModal) {
+        remotePairingModal.style.display = "flex";
+      }
+    }
+  } catch (_) {}
 
   // Start initialization
   initIndexedDB();

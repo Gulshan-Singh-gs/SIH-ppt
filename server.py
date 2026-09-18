@@ -9,9 +9,15 @@ import sys
 import json
 import time
 import io
+import base64
 import zipfile
 from pathlib import Path
 from typing import Set, Optional, Dict, Any, List
+
+try:
+    import qrcode
+except ImportError:
+    qrcode = None
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, UploadFile, File
@@ -2268,6 +2274,24 @@ async def generate_pairing_code(req: Request):
     ttl = int(body.get("ttl_seconds", 300))
     code = lan_security_mgr.generate_pairing_code(ttl_seconds=ttl, device_hint=device_hint)
 
+    port = int(os.environ.get("PORT", "8001"))
+    lan_ip = lan_security_mgr.get_host_ip()
+    pairing_url = f"http://{lan_ip}:{port}/?pin={code}"
+
+    qr_data_uri = None
+    if qrcode is not None:
+        try:
+            qr = qrcode.QRCode(box_size=5, border=2)
+            qr.add_data(pairing_url)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="#0f172a", back_color="#ffffff")
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+            qr_data_uri = f"data:image/png;base64,{b64}"
+        except Exception as e:
+            print(f"[LAN] QR Generation error: {e}")
+
     audit_ledger.record_event(
         event_type="DEVICE_PAIRING_CODE_ISSUED",
         action=f"Single-use pairing code issued for '{device_hint}' (TTL: {ttl}s)",
@@ -2279,8 +2303,10 @@ async def generate_pairing_code(req: Request):
     return {
         "status": "SUCCESS",
         "pairing_code": code,
+        "pairing_url": pairing_url,
+        "qr_code_uri": qr_data_uri,
         "expires_in_seconds": ttl,
-        "instructions": "Enter this 6-digit code on your remote laptop or tablet at http://ai-workbench.local:8001 or the host LAN IP."
+        "instructions": "Scan the QR code with your mobile device or open the URL and enter the 6-digit PIN."
     }
 
 

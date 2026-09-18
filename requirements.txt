@@ -11,3 +11,4 @@ tokenizers>=0.20.0
 numpy>=1.24.0
 zeroconf>=0.130.0
 ifaddr>=0.2.0
+qrcode>=7.4.0
