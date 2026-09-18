@@ -4314,21 +4314,29 @@ Sincerely,
     btnToggleLanMode.addEventListener("click", async () => {
       const isCurrentlyLan = lanStatusBadge && lanStatusBadge.textContent.includes("LAN ACCESS ENABLED");
       const targetMode = isCurrentlyLan ? "LOCAL_ONLY" : "LAN";
+      btnToggleLanMode.disabled = true;
       try {
         const res = await fetch("/api/lan/mode", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ mode: targetMode })
         });
-        const data = await res.json();
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (_) {
+          data = { error: `Server error (HTTP ${res.status})` };
+        }
         if (res.ok && data.status === "SUCCESS") {
           appendLog("NETWORK", `Network Mode switched to: ${targetMode}`, "success");
           loadLANStatusUI();
         } else {
-          alert(`Could not change network mode: ${data.error || "Unknown error"}`);
+          alert(`Could not change network mode: ${data.error || data.detail || ("HTTP " + res.status)}`);
         }
       } catch (e) {
         alert("Failed to update network mode: " + e.message);
+      } finally {
+        btnToggleLanMode.disabled = false;
       }
     });
   }
