@@ -1,0 +1,64 @@
+{
+  "gem.gov.in": {
+    "portal_name": "GeM (Government e-Marketplace)",
+    "portal_url": "https://gem.gov.in",
+    "user_role": "Section Officer / Procurement Officer",
+    "organization": "Ministry of Electronics and Information Technology (MeitY)",
+    "saved_at": "2026-09-01 10:00:00",
+    "status": "Authenticated (Template Session)",
+    "cookies": [
+      {
+        "name": "GEM_SSO_SESSION",
+        "value": "your_gem_sso_session_cookie_here",
+        "domain": "gem.gov.in",
+        "path": "/",
+        "httpOnly": true,
+        "secure": true
+      },
+      {
+        "name": "NIC_SESSION_ID",
+        "value": "your_nic_session_id_here",
+        "domain": "gem.gov.in",
+        "path": "/",
+        "httpOnly": false,
+        "secure": true
+      }
+    ]
+  },
+  "eprocure.gov.in": {
+    "portal_name": "CPPP (Central Public Procurement Portal)",
+    "portal_url": "https://eprocure.gov.in/eprocure/app",
+    "user_role": "Under Secretary (Finance)",
+    "organization": "Department of Expenditure",
+    "saved_at": "2026-09-01 10:00:00",
+    "status": "Authenticated (Template Session)",
+    "cookies": [
+      {
+        "name": "CPPP_SESSION",
+        "value": "your_cppp_session_cookie_here",
+        "domain": "eprocure.gov.in",
+        "path": "/",
+        "httpOnly": true,
+        "secure": true
+      }
+    ]
+  },
+  "localhost:8001": {
+    "portal_name": "Sovereign Mock GeM Tender Portal (Local)",
+    "portal_url": "http://127.0.0.1:8001/portal/gem-tenders",
+    "user_role": "Sovereign Officer (Admin)",
+    "organization": "Public Sector On-Premise Unit",
+    "saved_at": "2026-09-01 10:00:00",
+    "status": "Authenticated (Instant Bypass Active)",
+    "cookies": [
+      {
+        "name": "SOVEREIGN_AUTH_KEY",
+        "value": "local_mock_token_sample_2026",
+        "domain": "127.0.0.1",
+        "path": "/",
+        "httpOnly": false,
+        "secure": false
+      }
+    ]
+  }
+}

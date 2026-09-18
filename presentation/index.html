@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sovereign AI Workbench — Smart India Hackathon (PSC26117)</title>
+<style>
+/* ================= TOKENS ================= */
+:root{
+  --bg:#e4e9f2;
+  --ink:#333a52;
+  --mut:#5a6178;
+  --acc:#5b6cf9;
+  --line:#b9c0d4;
+  --shadow-dark:#c8cfdc;
+  --shadow-light:#ffffff;
+  --shadow-raised:7px 7px 14px var(--shadow-dark), -7px -7px 14px var(--shadow-light);
+  --shadow-raised-sm:4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  --shadow-inset:inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  --shadow-pressed:inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+  --r-card:18px; --r-tile:14px; --r-pill:999px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--mut);font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;font-weight:400;line-height:1.45;display:flex;flex-direction:column;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased}
+.ic{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+b,strong{font-weight:700;color:var(--ink)}
+button{font-family:inherit;border:none;background:none}
+
+/* ================= HUD ================= */
+.hud{flex:none;padding:12px 20px 8px;position:relative;z-index:50}
+.ptrack{position:relative;height:12px;border-radius:var(--r-pill);box-shadow:var(--shadow-inset)}
+.pfill{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) * .1666);border-radius:var(--r-pill);background:var(--acc);box-shadow:var(--shadow-raised-sm);transition:width .3s ease}
+.hudrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.brand{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:var(--r-pill);box-shadow:var(--shadow-raised-sm);font-size:10.5px;font-weight:700;color:var(--mut);white-space:nowrap;background:var(--bg)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--acc);flex:none}
+.dots{display:flex;gap:10px;padding:9px 16px;border-radius:var(--r-pill);box-shadow:var(--shadow-raised-sm);background:var(--bg)}
+.ndot{width:13px;height:13px;border-radius:50%;box-shadow:var(--shadow-raised-sm);background:var(--bg);cursor:pointer;position:relative;padding:0;transition:box-shadow .18s ease}
+.ndot:hover{box-shadow:var(--shadow-inset)}
+.ndot.active{box-shadow:var(--shadow-inset)}
+.ndot.active::after{content:"";position:absolute;inset:3.5px;border-radius:50%;background:var(--acc)}
+.hud-actions{display:flex;align-items:center;gap:9px}
+.icobtn{width:36px;height:36px;border-radius:50%;background:var(--bg);box-shadow:var(--shadow-raised-sm);color:var(--mut);display:grid;place-items:center;cursor:pointer;transition:box-shadow .18s ease,color .18s ease;touch-action:manipulation}
+.icobtn:hover,.icobtn:active{box-shadow:var(--shadow-inset);color:var(--ink)}
+.counter{padding:7px 15px;border-radius:var(--r-pill);box-shadow:var(--shadow-inset);font-size:12px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;min-width:58px;text-align:center}
+
+/* ================= STAGE ================= */
+.stage{position:relative;flex:1;min-height:0;overscroll-behavior:none}
+.frame{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform:translate(-50%,-50%);transform-origin:center}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:46px 8% 42px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .26s ease,visibility 0s linear .26s}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .26s ease}
+
+/* ================= SHARED ================= */
+.eyebrow{display:flex;align-items:center;gap:7px;font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.shead{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:14px;flex:none}
+.stitle{font-size:23px;font-weight:700;color:var(--ink);letter-spacing:-.01em;line-height:1.15;margin-top:4px}
+.ssub{font-size:11px;color:var(--mut);margin-top:5px;max-width:74ch;line-height:1.45}
+.hbadges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;padding-top:16px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-pill);box-shadow:var(--shadow-raised-sm);font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--ink);white-space:nowrap;background:var(--bg)}
+.tag .ic{width:11px;height:11px;color:var(--acc)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3.5px 10px;border-radius:var(--r-pill);box-shadow:var(--shadow-raised-sm);font-size:8.5px;font-weight:800;letter-spacing:.08em;color:var(--ink);white-space:nowrap;background:var(--bg);flex:none}
+.badge .ic{width:10px;height:10px}
+.b-ver .ic{color:var(--acc)}
+.b-hyb,.b-tgt,.b-risk{color:var(--mut)}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+.sfoot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px;flex-wrap:wrap}
+.fmeta{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--mut);font-weight:500}
+.flegend{display:flex;gap:8px;flex-wrap:wrap}
+.pageno{padding:6px 14px;border-radius:var(--r-pill);box-shadow:var(--shadow-inset);font-size:9px;font-weight:800;letter-spacing:.12em;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mini{width:24px;height:24px;border-radius:50%;box-shadow:var(--shadow-raised-sm);display:grid;place-items:center;color:var(--mut);flex:none;background:var(--bg)}
+.mini .ic{width:12px;height:12px}
+.mini.acc{color:var(--acc)}
+.mini.xs{width:20px;height:20px}.mini.xs .ic{width:10px;height:10px}
+.conn{width:5px;height:12px;border-radius:3px;background:var(--line);flex:none}
+.conn-h{width:24px;height:5px;border-radius:3px;background:var(--line);flex:none}
+.nic{width:36px;height:36px;border-radius:50%;box-shadow:var(--shadow-raised-sm);display:grid;place-items:center;color:var(--acc);flex:none;background:var(--bg)}
+.nic .ic{width:17px;height:17px}
+.nic.mut{color:var(--mut)}
+.nic.sm{width:30px;height:30px}.nic.sm .ic{width:14px;height:14px}
+.seclabel{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.seclabel .ic{width:12px;height:12px;color:var(--acc)}
+
+/* ================= NAV / EDGES / HINT ================= */
+.navb{position:fixed;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;background:var(--bg);box-shadow:var(--shadow-raised);color:var(--mut);display:grid;place-items:center;cursor:pointer;z-index:60;transition:box-shadow .18s ease,color .18s ease,opacity .18s ease;touch-action:manipulation}
+.navb:hover,.navb:active{box-shadow:var(--shadow-pressed);color:var(--ink)}
+.navb:disabled{opacity:.45;cursor:default}
+.navb:disabled:hover{box-shadow:var(--shadow-raised);color:var(--mut)}
+.navb .ic{width:22px;height:22px}
+.navb.prev{left:18px}.navb.next{right:18px}
+.edge{position:fixed;top:0;bottom:0;width:72px;z-index:40;cursor:pointer;display:flex;align-items:center}
+.edge-l{left:0;justify-content:flex-start;padding-left:5px}
+.edge-r{right:0;justify-content:flex-end;padding-right:5px}
+.edge .ic{width:18px;height:18px;color:var(--mut);opacity:0;transition:opacity .2s ease}
+.edge:hover .ic{opacity:.5}
+.hint{position:fixed;left:20px;bottom:16px;z-index:45;padding:7px 14px;border-radius:var(--r-pill);box-shadow:var(--shadow-raised-sm);font-size:9.5px;font-weight:600;color:var(--mut);letter-spacing:.03em;background:var(--bg)}
+.hint b{color:var(--ink)}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:var(--r-pill)}
+
+/* ================= SLIDE 1 : BOUNDARY DIAGRAM ================= */
+.s1-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:24px;flex:1;min-height:0}
+.s1-hero-badges{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.s1-h1{font-size:36px;font-weight:800;color:var(--ink);line-height:1.12;letter-spacing:-.02em;margin-bottom:12px}
+.s1-tag{font-size:12px;color:var(--mut);line-height:1.55;max-width:48ch;margin-bottom:18px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.mbox{border-radius:var(--r-tile);box-shadow:var(--shadow-inset);padding:10px 14px;display:flex;flex-direction:column;gap:3px}
+.mlabel{font-size:8.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--mut)}
+.mval{font-size:10.5px;font-weight:700;color:var(--ink);line-height:1.35}
+.dia{position:relative;border-radius:var(--r-card);box-shadow:var(--shadow-raised);min-height:420px;background:var(--bg)}
+.blabel{position:absolute;left:18px;top:16px;display:flex;align-items:center;gap:8px;font-size:9px;font-weight:800;letter-spacing:.14em;color:var(--mut)}
+.blabel .ic{width:13px;height:13px;color:var(--acc)}
+.ring{position:absolute;left:5%;top:13%;width:56%;aspect-ratio:1/1;border-radius:50%;box-shadow:var(--shadow-inset)}
+.dnode{position:absolute;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);background:var(--bg)}
+.dnode .nt{min-width:0}
+.nt b{display:block;font-size:10.5px;line-height:1.3}
+.nt span{font-size:8.8px;color:var(--mut);line-height:1.3;display:block;margin-top:1px}
+.dn-docs{left:9%;top:17%;width:48%}
+.dn-core{left:9%;top:39%;width:48%}
+.dn-agent{left:9%;top:61%;width:48%}
+.dc1{position:absolute;left:32%;top:30.5%;height:20px}
+.dc2{position:absolute;left:32%;top:52.5%;height:20px}
+.dn-cloud{right:4%;top:13%;width:33%}
+.dn-globe{right:3%;bottom:9%;width:38%}
+.link-x{position:absolute;left:60%;top:21%;display:flex;align-items:center;gap:5px}
+.link-ok{position:absolute;left:60%;top:70%;display:flex;align-items:center;gap:5px}
+
+/* ================= SLIDE 2 : FLOW COMPARISON ================= */
+.s2-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ccol{border-radius:var(--r-card);box-shadow:var(--shadow-raised);padding:14px 16px;display:flex;flex-direction:column;gap:0;background:var(--bg)}
+.cchead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cctitle{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--ink)}
+.cctitle .ic{width:15px;height:15px}
+.cctitle .w{color:var(--mut)}.cctitle .g{color:var(--acc)}
+.fnode3{display:flex;gap:11px;align-items:center;padding:7px 12px;border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);background:var(--bg)}
+.fnode3 .nt b{font-size:10.5px}
+.fnode3 .nt span{font-size:8.8px}
+.flowcol{display:flex;flex-direction:column;align-items:stretch}
+.flowcol .conn{align-self:center}
+.verdict{display:flex;align-items:center;gap:9px;font-size:9.5px;font-weight:600;padding:8px 13px;border-radius:var(--r-tile);margin-top:9px}
+.verdict.bad{box-shadow:var(--shadow-inset);color:var(--mut)}
+.verdict.good{box-shadow:var(--shadow-raised-sm);color:var(--ink)}
+.verdict .ic{width:13px;height:13px;flex:none}
+.verdict.bad .ic{color:var(--mut)}.verdict.good .ic{color:var(--acc)}
+.drow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.dcard{border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);padding:12px 13px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;background:var(--bg)}
+.dcard .nic{width:42px;height:42px}.dcard .nic .ic{width:19px;height:19px}
+.dtitle{font-size:9.5px;font-weight:800;letter-spacing:.09em;color:var(--ink)}
+.ddesc{font-size:8.8px;color:var(--mut);line-height:1.4}
+
+/* ================= SLIDE 3 : STACK + MODE FLOWS ================= */
+.s3-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:18px;flex:1;min-height:0;align-items:start}
+.boundary-tag{display:inline-flex;align-items:center;gap:7px;font-size:8.5px;font-weight:800;letter-spacing:.15em;color:var(--mut);padding:5px 12px;border-radius:var(--r-pill);box-shadow:var(--shadow-raised-sm);align-self:flex-start;margin-bottom:8px;background:var(--bg)}
+.boundary-tag .ic{width:11px;height:11px;color:var(--acc)}
+.stack-col{display:flex;flex-direction:column}
+.layer{border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);padding:8px 13px;background:var(--bg);display:flex;align-items:center;gap:12px}
+.lnum{width:28px;height:28px;border-radius:50%;box-shadow:var(--shadow-inset);display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--acc);flex:none}
+.lmain{flex:1;min-width:0}
+.lname{font-size:10.5px;font-weight:800;color:var(--ink);letter-spacing:.02em;display:block;margin-bottom:5px}
+.lchips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:3px 9px;border-radius:var(--r-pill);box-shadow:var(--shadow-inset);font-size:8.8px;font-weight:600;color:var(--ink);white-space:nowrap;background:var(--bg)}
+.stack-col .conn{align-self:center}
+.pol-col{display:flex;flex-direction:column;gap:11px}
+.pol{border-radius:var(--r-card);box-shadow:var(--shadow-raised);padding:13px 16px;background:var(--bg)}
+.polhead{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.poltitle{display:flex;gap:7px;align-items:center;font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--ink)}
+.poltitle .ic{width:14px;height:14px;color:var(--acc)}
+.mflow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:9px}
+.mf-node{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:var(--r-pill);box-shadow:var(--shadow-raised-sm);font-size:9px;font-weight:700;color:var(--ink);background:var(--bg);white-space:nowrap}
+.mf-node .ic{width:11px;height:11px;color:var(--mut)}
+.mf-node.hl .ic{color:var(--acc)}
+.mf-node.inset{box-shadow:var(--shadow-inset);color:var(--mut)}
+.mf-arr{color:var(--mut);flex:none}
+.mf-arr .ic{width:12px;height:12px}
+.polnote{font-size:9.3px;color:var(--mut);line-height:1.45}
+.leg{border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);padding:11px 14px;background:var(--bg)}
+.leg-title{font-size:9px;font-weight:800;letter-spacing:.13em;color:var(--ink);display:block;margin-bottom:8px}
+.leg-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
+.litem{display:flex;gap:7px;align-items:center;font-size:9.3px;font-weight:600;color:var(--mut)}
+.litem .ic{width:12px;height:12px;flex:none}
+.litem .a{color:var(--acc)}
+.sbar{border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);padding:9px 17px;display:flex;justify-content:space-between;gap:12px;font-size:9.5px;color:var(--mut);align-items:center;flex-wrap:wrap;background:var(--bg)}
+.sbar b{color:var(--ink)}
+
+/* ================= SLIDE 4 : CHECKLIST + RISK MAP ================= */
+.s4-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:18px;flex:1;min-height:0;align-items:start}
+.panelbox{border-radius:var(--r-card);box-shadow:var(--shadow-raised);padding:15px 17px;background:var(--bg)}
+.chk-list{display:flex;flex-direction:column;gap:9px}
+.chk-row{display:flex;gap:11px;align-items:center;padding:8px 13px;border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);background:var(--bg)}
+.chk-row .ck{width:26px;height:26px;border-radius:50%;box-shadow:var(--shadow-inset);display:grid;place-items:center;color:var(--acc);flex:none}
+.chk-row .ck .ic{width:12px;height:12px}
+.chk-row .nic{width:30px;height:30px}.chk-row .nic .ic{width:14px;height:14px}
+.chk-t{flex:1;font-size:10.5px;font-weight:700;color:var(--ink);line-height:1.3}
+.map-list{display:flex;flex-direction:column;gap:9px}
+.map-row{display:grid;grid-template-columns:1fr 32px 1.15fr;gap:9px;align-items:center}
+.risk-n,.mit-n{display:flex;gap:10px;align-items:center;padding:8px 12px;border-radius:var(--r-tile);background:var(--bg)}
+.risk-n{box-shadow:var(--shadow-inset)}
+.mit-n{box-shadow:var(--shadow-raised-sm)}
+.risk-n .nt b,.mit-n .nt b{font-size:10.2px}
+.maparr{display:grid;place-items:center}
+.maparr span{width:28px;height:28px;border-radius:50%;box-shadow:var(--shadow-raised-sm);display:grid;place-items:center;color:var(--mut);background:var(--bg)}
+.maparr .ic{width:12px;height:12px}
+
+/* ================= SLIDE 5 : CHAIN + STAT TILES ================= */
+.chain{display:flex;align-items:stretch;gap:8px}
+.cnode{flex:1;border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);padding:9px 12px;display:flex;flex-direction:column;gap:2px;justify-content:center;background:var(--bg);min-width:0}
+.cn-t{font-size:9px;font-weight:800;letter-spacing:.07em;color:var(--ink);line-height:1.3}
+.cn-s{font-size:8.8px;color:var(--mut);line-height:1.35}
+.carr{display:grid;place-items:center;color:var(--mut);flex:none}
+.carr .ic{width:14px;height:14px}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.stat2{border-radius:var(--r-tile);box-shadow:var(--shadow-inset);padding:12px 14px;display:flex;align-items:center;gap:13px;background:var(--bg)}
+.stat2 .nic{width:42px;height:42px}.stat2 .nic .ic{width:19px;height:19px}
+.kval{font-size:15px;font-weight:800;color:var(--acc);letter-spacing:.01em;white-space:nowrap;display:block}
+.ktitle{font-size:10px;font-weight:700;color:var(--ink);display:block;margin-top:1px}
+.kbadge{margin-top:5px}
+
+/* ================= SLIDE 6 : SOURCE GRID + PIPELINE ================= */
+.s6-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:18px;flex:1;min-height:0;align-items:start}
+.ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ref2{display:flex;gap:11px;align-items:center;border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);padding:10px 13px;background:var(--bg)}
+.ref2 .nt b{font-size:10.3px}
+.ref2 .nt span{font-size:8.6px}
+.refnum{font-size:8px;font-weight:800;color:var(--mut);letter-spacing:.05em;display:block}
+.pipe{display:flex;flex-direction:column;align-items:stretch}
+.pipe .conn{align-self:center}
+.vnode{display:flex;gap:11px;align-items:center;padding:8px 13px;border-radius:var(--r-tile);box-shadow:var(--shadow-raised-sm);background:var(--bg)}
+.vnode .nt{flex:1;min-width:0}
+.vnode .nt b{font-size:10.3px}
+
+/* ================= MOBILE / DOC MODE ================= */
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+body.doc .stage{overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+body.doc .stage::-webkit-scrollbar{width:0;height:0}
+body.doc .frame{position:static;width:100%;height:auto;transform:none !important;display:block}
+body.doc .slide{position:relative;inset:auto;display:none;min-height:calc(100dvh - 78px);padding:22px 18px calc(104px + env(safe-area-inset-bottom));opacity:1;visibility:visible;pointer-events:auto;transition:none}
+body.doc .slide.active{display:flex;animation:fadein .25s ease}
+body.doc .navb{top:auto;bottom:calc(16px + env(safe-area-inset-bottom));transform:none;width:58px;height:58px}
+body.doc .navb.prev{left:50%;margin-left:-72px}
+body.doc .navb.next{right:50%;margin-right:-72px}
+body.doc .edge,body.doc .hint,body.doc .dots{display:none}
+body.doc .brand{font-size:9px;padding:6px 11px}
+body.doc .shead{flex-direction:column;gap:10px}
+body.doc .hbadges{justify-content:flex-start;padding-top:0}
+body.doc .stitle{font-size:20px}
+body.doc .ssub{font-size:11.5px}
+body.doc .s1-grid,body.doc .s2-grid,body.doc .s3-grid,body.doc .s4-grid,body.doc .s6-grid{grid-template-columns:1fr}
+body.doc .s1-h1{font-size:28px}
+body.doc .dia{min-height:400px}
+body.doc .drow{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+body.doc .chain{flex-direction:column;gap:7px}
+body.doc .carr .ic{transform:rotate(90deg)}
+body.doc .kpi-grid{grid-template-columns:1fr}
+body.doc .ref-grid{grid-template-columns:1fr}
+body.doc .map-row{grid-template-columns:1fr;gap:7px}
+body.doc .maparr span{transform:rotate(90deg)}
+body.doc .fmeta,body.doc .polnote,body.doc .ddesc,body.doc .fnode3 .nt span,body.doc .nt span{font-size:10.5px}
+body.doc .slabel,body.doc .mname,body.doc .valname,body.doc .reftitle,body.doc .lname,body.doc .ktitle,body.doc .nt b,body.doc .chk-t{font-size:12px}
+body.doc .chip,body.doc .mf-node{font-size:10px;white-space:normal}
+body.doc .kval{font-size:16px}
+body.doc .sfoot{justify-content:flex-start}
+
+/* ================= PRINT ================= */
+@media print{
+  @page{size:1280px 720px;margin:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{overflow:visible;height:auto;display:block}
+  .hud,.navb,.edge,.hint{display:none !important}
+  .stage{overflow:visible;height:auto}
+  .frame{position:static;width:auto;height:auto;transform:none !important;display:block}
+  .slide{position:relative;display:flex !important;opacity:1 !important;visibility:visible !important;pointer-events:auto;width:1280px;height:720px;margin:0 auto;page-break-after:always;break-after:page;animation:none !important}
+  .slide:last-child{page-break-after:auto;break-after:auto}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<!-- ================= SVG SPRITE ================= -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L19.5 6.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-chl" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
+  <symbol id="i-chr" viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9.5V4h5.5M20 9.5V4h-5.5M4 14.5V20h5.5M20 14.5V20h-5.5"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3.5h10V8"/><rect x="4" y="8" width="16" height="8" rx="1.8"/><path d="M7 13.5h10v7H7z"/><path d="M16.8 11h.01"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.6 2.8 19.8h18.4L12 3.6z"/><path d="M12 9.5v4.4"/><path d="M12 17.2h.01"/></symbol>
+  <symbol id="i-diamond" viewBox="0 0 24 24"><path d="M12 3.2 20.8 12 12 20.8 3.2 12z"/></symbol>
+  <symbol id="i-half" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 6.7a2 2 0 0 1 2-2h3.9l2 2.5h7.1a2 2 0 0 1 2 2v8.1a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><rect x="10.6" y="10.6" width="2.8" height="2.8" rx=".6"/><path d="M9.5 2.5v3M14.5 2.5v3M9.5 18.5v3M14.5 18.5v3M2.5 9.5h3M2.5 14.5h3M18.5 9.5h3M18.5 14.5h3"/></symbol>
+  <symbol id="i-robot" viewBox="0 0 24 24"><rect x="4.5" y="8.5" width="15" height="10.5" rx="2.6"/><path d="M12 8.5V5.4"/><circle cx="12" cy="4" r="1.4"/><path d="M9 13h.01M15 13h.01"/><path d="M9.3 16.2h5.4"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.7 2.7 4 5.6 4 9s-1.3 6.3-4 9c-2.7-2.7-4-5.6-4-9s1.3-6.3 4-9z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.2c0 4.6-3.2 8-7.5 9.8-4.3-1.8-7.5-5.2-7.5-9.8V6l7.5-3z"/><path d="M9 12l2.2 2.2 4.3-4.7"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4.8 13.2h5.4L9.9 22l8.3-11.2h-5.4L13 2z"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><path d="M3.5 7h3.8l9.4 10h3.8"/><path d="M3.5 17h3.8l2.3-2.5"/><path d="M14.4 9.5 16.7 7h3.8"/><path d="M17.6 4.4 20.5 7l-2.9 2.6M17.6 14.4l2.9 2.6-2.9 2.6"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="3.2" rx="1"/><rect x="5" y="4.6" width="14" height="16.4" rx="2"/><path d="M9 13.5l2.1 2.1 4-4.3"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M12 3.2a5.8 5.8 0 0 1 3.5 10.4c-.7.5-1.2 1.3-1.4 2.2H9.9c-.2-.9-.7-1.7-1.4-2.2A5.8 5.8 0 0 1 12 3.2z"/><path d="M9.8 18.8h4.4M10.6 21.2h2.8"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5V5.5A2.5 2.5 0 0 1 6.5 3H20v14H6.5A2.5 2.5 0 0 0 4 19.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M7 20v-6.5M12 20V8.5M17 20v-9.5"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M6.8 18.5h10.2a3.9 3.9 0 0 0 .7-7.7 6 6 0 0 0-11.6-1.3 4.6 4.6 0 0 0 .7 9z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11.5" height="11.5" rx="2"/><path d="M5.5 15V5.5a2 2 0 0 1 2-2H17"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"/><path d="M4 5.5v13c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8v-13"/><path d="M4 12c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4.5" y="5" width="15" height="10" rx="1.6"/><path d="M2.5 18.5h19"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12 20 3M16.5 6.5 19 9M13.8 9.2l2 2"/></symbol>
+  <symbol id="i-usercheck" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.9-3.6 3.4-5.6 6.2-5.6 1.5 0 2.9.5 4 1.4"/><path d="M14.5 16.5l2.2 2.2 4-4.4"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 0 1 14.7-5.8L20.5 8"/><path d="M20.5 3.5V8H16"/><path d="M20.5 12a8.5 8.5 0 0 1-14.7 5.8L3.5 16"/><path d="M3.5 20.5V16H8"/></symbol>
+</svg>
+
+<!-- ================= HUD ================= -->
+<header class="hud">
+  <div class="ptrack" aria-hidden="true"><div class="pfill" id="pfill"></div></div>
+  <div class="hudrow">
+    <span class="brand"><span class="dot" aria-hidden="true"></span>Smart India Hackathon · PSC26117 · Sovereign AI Workbench</span>
+    <div class="dots" id="dots" role="tablist" aria-label="Slide selector">
+      <button type="button" class="ndot active" data-target="0" aria-label="Slide 1: Title"></button>
+      <button type="button" class="ndot" data-target="1" aria-label="Slide 2: Proposed Solution"></button>
+      <button type="button" class="ndot" data-target="2" aria-label="Slide 3: Technical Approach"></button>
+      <button type="button" class="ndot" data-target="3" aria-label="Slide 4: Feasibility and Viability"></button>
+      <button type="button" class="ndot" data-target="4" aria-label="Slide 5: Impact and Benefits"></button>
+      <button type="button" class="ndot" data-target="5" aria-label="Slide 6: Research and References"></button>
+    </div>
+    <div class="hud-actions">
+      <button type="button" class="icobtn" id="fsbtn" aria-label="Toggle fullscreen (F)"><svg class="ic" style="width:15px;height:15px"><use href="#i-expand"/></svg></button>
+      <button type="button" class="icobtn" id="printbtn" aria-label="Print or export to PDF (P)"><svg class="ic" style="width:15px;height:15px"><use href="#i-print"/></svg></button>
+      <span class="counter" id="counter" aria-live="polite">1 / 6</span>
+    </div>
+  </div>
+</header>
+
+<!-- ================= STAGE ================= -->
+<main class="stage" id="stage" aria-roledescription="carousel" aria-label="Slide deck: Sovereign AI Workbench, Smart India Hackathon PSC26117">
+<div class="frame" id="frame">
+
+  <!-- ================= SLIDE 1 ================= -->
+  <section class="slide active" role="group" aria-roledescription="slide" aria-label="1 of 6 — Title: Sovereign AI Workbench">
+    <div class="shead">
+      <div>
+        <div class="eyebrow"><span class="dot" aria-hidden="true"></span>Smart India Hackathon 2024 • Idea Presentation</div>
+        <h2 class="stitle">SOVEREIGN AI WORKBENCH</h2>
+        <p class="ssub">Local-First Agentic AI &amp; Controlled Automation for Sensitive Government Workflows</p>
+      </div>
+      <div class="hbadges">
+        <span class="tag"><svg class="ic"><use href="#i-doc"/></svg>PS ID: PSC26117</span>
+        <span class="tag">THEME: SMART AUTOMATION</span>
+        <span class="tag">CATEGORY: SOFTWARE</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="s1-grid">
+        <div>
+          <div class="s1-hero-badges">
+            <span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>IMPLEMENTED PROTOTYPE</span>
+            <span class="badge b-hyb"><svg class="ic"><use href="#i-half"/></svg>DUAL-EXECUTION ARCHITECTURE</span>
+          </div>
+          <h1 class="s1-h1">Data Sovereignty<br>At The Edge.</h1>
+          <p class="s1-tag">Sensitive government documents, procurement data, and portal credentials <strong>never leave the organizational boundary</strong>.</p>
+          <div class="mgrid">
+            <div class="mbox"><span class="mlabel">Problem Statement</span><span class="mval">PSC26117 — Sensitive Gov AI</span></div>
+            <div class="mbox"><span class="mlabel">Core Execution Mode</span><span class="mval">Local-First + Demo Acceleration</span></div>
+            <div class="mbox"><span class="mlabel">Operational Boundary</span><span class="mval">Local Workstation / Intranet</span></div>
+            <div class="mbox"><span class="mlabel">Automation Engine</span><span class="mval">Playwright Controlled Chromium</span></div>
+          </div>
+        </div>
+
+        <!-- Trust-boundary diagram -->
+        <div class="dia" role="img" aria-label="Diagram: documents, AI core and browser agent inside the local trust boundary; cloud egress blocked; controlled portal action allowed">
+          <div class="blabel"><svg class="ic"><use href="#i-lock"/></svg>ORGANIZATIONAL / LOCAL TRUST BOUNDARY</div>
+          <div class="ring" aria-hidden="true"></div>
+
+          <div class="dnode dn-docs"><span class="nic mut" aria-hidden="true"><svg class="ic"><use href="#i-folder"/></svg></span><div class="nt"><b>Sensitive Office Documents</b><span>Tenders · RFPs · Classified Briefs</span></div></div>
+          <div class="conn dc1" aria-hidden="true"></div>
+          <div class="dnode dn-core"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-chip"/></svg></span><div class="nt"><b>Sovereign AI Core Engine</b><span>OCR · Vector RAG · Policy Adapter</span></div></div>
+          <div class="conn dc2" aria-hidden="true"></div>
+          <div class="dnode dn-agent"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-robot"/></svg></span><div class="nt"><b>Playwright Workflow Agent</b><span>Session Vault · Form Auto-Fill</span></div></div>
+
+          <div class="dnode dn-cloud"><span class="nic mut" aria-hidden="true"><svg class="ic"><use href="#i-cloud"/></svg></span><div class="nt"><b>Public Cloud AI</b><span>Zero egress</span></div></div>
+          <div class="link-x" aria-hidden="true"><span class="conn-h"></span><span class="mini xs"><svg class="ic"><use href="#i-x"/></svg></span></div>
+
+          <div class="dnode dn-globe"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-globe"/></svg></span><div class="nt"><b>Controlled Portal Action</b><span>CPPP / GeM · local authenticated session</span></div></div>
+          <div class="link-ok" aria-hidden="true"><span class="conn-h"></span><span class="mini xs acc"><svg class="ic"><use href="#i-check"/></svg></span></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="sfoot">
+      <div class="fmeta"><span class="mini acc" aria-hidden="true"><svg class="ic"><use href="#i-shield"/></svg></span>Architectural Rule: Sensitive data stays within the operational boundary</div>
+      <div class="flegend">
+        <span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED CODE</span>
+        <span class="badge b-hyb"><svg class="ic"><use href="#i-half"/></svg>HYBRID / DEMO</span>
+        <span class="badge b-tgt"><svg class="ic"><use href="#i-diamond"/></svg>TARGET ROADMAP</span>
+      </div>
+      <span class="pageno">SLIDE 01 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ================= SLIDE 2 ================= -->
+  <section class="slide" role="group" aria-roledescription="slide" aria-label="2 of 6 — Proposed Solution">
+    <div class="shead">
+      <div>
+        <div class="eyebrow"><span class="dot" aria-hidden="true"></span>Slide 2 — Proposed Solution</div>
+        <h2 class="stitle">From Cloud Exposure to Sovereign Edge Execution</h2>
+        <p class="ssub">Local document intelligence paired with authenticated browser agents eliminates external document transmission.</p>
+      </div>
+      <div class="hbadges"><span class="tag">PROBLEM &amp; SOLUTION</span></div>
+    </div>
+
+    <div class="body">
+      <div class="s2-grid">
+        <div class="ccol">
+          <div class="cchead"><span class="cctitle"><svg class="ic w"><use href="#i-warn"/></svg>CURRENT WORKFLOW</span><span class="badge b-risk"><svg class="ic"><use href="#i-warn"/></svg>HIGH EXPOSURE</span></div>
+          <div class="flowcol">
+            <div class="fnode3"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-doc"/></svg></span><div class="nt"><b>Sensitive Government Document</b><span>Classified specs, tender bids</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-cloud"/></svg></span><div class="nt"><b>Upload to Multi-Tenant Cloud AI</b><span>External API call over public web</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-warn"/></svg></span><div class="nt"><b>Data Exposure &amp; Third-Party Logging</b><span>Violates data sovereignty laws</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-copy"/></svg></span><div class="nt"><b>Manual Copy-Paste into Gov Portals</b><span>Operator fatigue &amp; high error rates</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-loop"/></svg></span><div class="nt"><b>Brittle Sessions &amp; Re-Logins</b><span>Frequent timeouts &amp; delays</span></div></div>
+          </div>
+          <div class="verdict bad"><svg class="ic"><use href="#i-x"/></svg><span>Exfiltration risk • Vendor lock-in • Manual delay</span></div>
+        </div>
+
+        <div class="ccol">
+          <div class="cchead"><span class="cctitle"><svg class="ic g"><use href="#i-shield"/></svg>SOVEREIGN AI WORKBENCH</span><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>LOCAL TRUST BOUNDARY</span></div>
+          <div class="flowcol">
+            <div class="fnode3"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-lock"/></svg></span><div class="nt"><b>Document Kept On-Premise</b><span>Zero egress file ingestion</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-scan"/></svg></span><div class="nt"><b>Local Extraction &amp; Tesseract OCR</b><span>100% on-device parsing</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-database"/></svg></span><div class="nt"><b>Local RAG Knowledge Synthesis</b><span>Deterministic chunk retrieval</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-route"/></svg></span><div class="nt"><b>Policy-Driven Inference Adapter</b><span>Configurable: Sovereign or Demo</span></div></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="fnode3"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-robot"/></svg></span><div class="nt"><b>Playwright Automated Portal Entry</b><span>Headless form entry + review check</span></div></div>
+          </div>
+          <div class="verdict good"><svg class="ic"><use href="#i-check"/></svg><span>Process locally • Automate locally • Controlled connectivity</span></div>
+        </div>
+      </div>
+
+      <div class="drow">
+        <div class="dcard"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-doc"/></svg></span><span class="dtitle">LOCAL-FIRST</span><span class="ddesc">Zero external transit for PDF, DOCX, scans</span></div>
+        <div class="dcard"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-zap"/></svg></span><span class="dtitle">AGENTIC FLOW</span><span class="ddesc">Autonomous multi-step form entry</span></div>
+        <div class="dcard"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-route"/></svg></span><span class="dtitle">DUAL POLICY</span><span class="ddesc">Demo Speed ⇄ Air-Gap Mode</span></div>
+        <div class="dcard"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-lock"/></svg></span><span class="dtitle">DATA BOUNDARY</span><span class="ddesc">Localhost-only socket kill switch</span></div>
+        <div class="dcard"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-clip"/></svg></span><span class="dtitle">OPERATOR AUDIT</span><span class="ddesc">Local audit trail + human sign-off</span></div>
+      </div>
+    </div>
+
+    <footer class="sfoot">
+      <div class="fmeta"><span class="mini acc" aria-hidden="true"><svg class="ic"><use href="#i-bulb"/></svg></span>Core Principle: The execution layer is separated from the data and control layer</div>
+      <span class="pageno">SLIDE 02 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ================= SLIDE 3 ================= -->
+  <section class="slide" role="group" aria-roledescription="slide" aria-label="3 of 6 — Technical Approach">
+    <div class="shead">
+      <div>
+        <div class="eyebrow"><span class="dot" aria-hidden="true"></span>Slide 3 — Technical Approach</div>
+        <h2 class="stitle">System Architecture &amp; Dual-Execution Policy</h2>
+        <p class="ssub">Local orchestration, document intelligence, and browser automation — decoupled from the inference backend.</p>
+      </div>
+      <div class="hbadges"><span class="tag">CORE ARCHITECTURE</span></div>
+    </div>
+
+    <div class="body">
+      <div class="s3-grid">
+        <div class="stack-col">
+          <span class="boundary-tag"><svg class="ic"><use href="#i-lock"/></svg>ORGANIZATIONAL / LOCAL TRUST BOUNDARY</span>
+          <div class="layer"><span class="lnum" aria-hidden="true">1</span><div class="lmain"><span class="lname">User &amp; Operator Layer</span><div class="lchips"><span class="chip">Dashboard UI (127.0.0.1)</span><span class="chip">WebSocket Telemetry</span><span class="chip">Document Dropzone</span><span class="chip">Human-in-the-Loop</span></div></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="layer"><span class="lnum" aria-hidden="true">2</span><div class="lmain"><span class="lname">Application &amp; Orchestration Layer</span><div class="lchips"><span class="chip">FastAPI Async Server</span><span class="chip">Path Sanitizer</span><span class="chip">Workspace Lock</span><span class="chip">Task Coordinator</span></div></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="layer"><span class="lnum" aria-hidden="true">3</span><div class="lmain"><span class="lname">Document Intelligence Layer</span><div class="lchips"><span class="chip">PyPDF2 &amp; python-docx</span><span class="chip">Tesseract OCR</span><span class="chip">Semantic RAG</span><span class="chip">Inference Adapter</span></div></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="layer"><span class="lnum" aria-hidden="true">4</span><div class="lmain"><span class="lname">Browser Automation Layer</span><div class="lchips"><span class="chip">Playwright Chromium</span><span class="chip">Tender Agent</span><span class="chip">DOM Fallbacks</span><span class="chip">Cookie Re-use</span></div></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="layer"><span class="lnum" aria-hidden="true">5</span><div class="lmain"><span class="lname">Local Storage &amp; Vault Layer</span><div class="lchips"><span class="chip">Encrypted Cookie Vault</span><span class="chip">Local Vector Store</span><span class="chip">File Sandboxes</span><span class="chip">Audit Event DB</span></div></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+        </div>
+
+        <div class="pol-col">
+          <div class="pol">
+            <div class="polhead"><span class="poltitle"><svg class="ic"><use href="#i-zap"/></svg>MODE 1: DEMO / HYBRID</span><span class="badge b-hyb"><svg class="ic"><use href="#i-half"/></svg>LIVE DEMO</span></div>
+            <div class="mflow">
+              <span class="mf-node"><svg class="ic"><use href="#i-doc"/></svg>Local Doc</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node"><svg class="ic"><use href="#i-scan"/></svg>OCR / RAG</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node hl"><svg class="ic"><use href="#i-cloud"/></svg>Gateway → Cloud LLM</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node"><svg class="ic"><use href="#i-zap"/></svg>~1.8s</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node"><svg class="ic"><use href="#i-robot"/></svg>Playwright</span>
+            </div>
+            <p class="polnote"><b>Rationale:</b> No thermal throttling; interactive latency during live judging.</p>
+          </div>
+
+          <div class="pol">
+            <div class="polhead"><span class="poltitle"><svg class="ic"><use href="#i-lock"/></svg>MODE 2: SOVEREIGN AIR-GAP</span><span class="badge b-tgt"><svg class="ic"><use href="#i-diamond"/></svg>TARGET PRODUCTION</span></div>
+            <div class="mflow">
+              <span class="mf-node"><svg class="ic"><use href="#i-doc"/></svg>Local Doc</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node"><svg class="ic"><use href="#i-scan"/></svg>OCR / RAG</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node hl"><svg class="ic"><use href="#i-chip"/></svg>Local Ollama (Llama 3.2)</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node inset"><svg class="ic"><use href="#i-lock"/></svg>Zero Egress</span><span class="mf-arr"><svg class="ic"><use href="#i-arrow"/></svg></span>
+              <span class="mf-node"><svg class="ic"><use href="#i-robot"/></svg>Playwright</span>
+            </div>
+            <p class="polnote"><b>Policy:</b> Full offline operation for defense &amp; sensitive intranets.</p>
+          </div>
+
+          <div class="leg">
+            <span class="leg-title">ARCHITECTURE BOUNDARY LEGEND</span>
+            <div class="leg-grid">
+              <span class="litem"><svg class="ic"><use href="#i-shield"/></svg>Local Trust Boundary</span>
+              <span class="litem"><svg class="ic"><use href="#i-route"/></svg>Controlled Gateway Path</span>
+              <span class="litem"><svg class="ic a"><use href="#i-check"/></svg>Verified Code Path</span>
+              <span class="litem"><svg class="ic"><use href="#i-diamond"/></svg>Target Capability</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sbar">
+        <span><b>Verified Stack:</b> Python 3.11 • FastAPI • Playwright • Chromium • Tesseract • Ollama • AsyncIO • PyPDF2 • SQLite Vault</span>
+        <span><b>Localhost Bound</b> (127.0.0.1:8000)</span>
+      </div>
+    </div>
+
+    <footer class="sfoot">
+      <div class="fmeta"><span class="mini acc" aria-hidden="true"><svg class="ic"><use href="#i-gear"/></svg></span>Key Innovation: Configurable inference adapter decouples business logic from model location</div>
+      <span class="pageno">SLIDE 03 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ================= SLIDE 4 ================= -->
+  <section class="slide" role="group" aria-roledescription="slide" aria-label="4 of 6 — Feasibility and Viability">
+    <div class="shead">
+      <div>
+        <div class="eyebrow"><span class="dot" aria-hidden="true"></span>Slide 4 — Feasibility &amp; Viability</div>
+        <h2 class="stitle">Engineering Feasibility, Audited Risks &amp; Defenses</h2>
+        <p class="ssub">Verified capabilities mapped against adversarial audit findings and concrete remediations.</p>
+      </div>
+      <div class="hbadges"><span class="tag">AUDIT &amp; HARDENING</span></div>
+    </div>
+
+    <div class="body">
+      <div class="s4-grid">
+        <div class="panelbox">
+          <div class="seclabel"><svg class="ic"><use href="#i-check"/></svg>Feasible &amp; Verified Today</div>
+          <div class="chk-list">
+            <div class="chk-row"><span class="ck" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span class="nic mut" aria-hidden="true"><svg class="ic"><use href="#i-doc"/></svg></span><span class="chk-t">Multi-Format Document Parsing</span></div>
+            <div class="chk-row"><span class="ck" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span class="nic mut" aria-hidden="true"><svg class="ic"><use href="#i-database"/></svg></span><span class="chk-t">Local Semantic RAG Engine</span></div>
+            <div class="chk-row"><span class="ck" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span class="nic mut" aria-hidden="true"><svg class="ic"><use href="#i-robot"/></svg></span><span class="chk-t">Playwright Browser Agent</span></div>
+            <div class="chk-row"><span class="ck" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span class="nic mut" aria-hidden="true"><svg class="ic"><use href="#i-route"/></svg></span><span class="chk-t">Dual-Engine Router</span></div>
+            <div class="chk-row"><span class="ck" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span class="nic mut" aria-hidden="true"><svg class="ic"><use href="#i-laptop"/></svg></span><span class="chk-t">Office-PC Deployment (8–16GB RAM)</span></div>
+          </div>
+        </div>
+
+        <div class="panelbox">
+          <div class="seclabel"><svg class="ic"><use href="#i-warn"/></svg>Risk → Mitigation Map</div>
+          <div class="map-list">
+            <div class="map-row">
+              <div class="risk-n"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-warn"/></svg></span><div class="nt"><b>Unbounded Uploads &amp; DoS</b></div></div>
+              <div class="maparr" aria-hidden="true"><span><svg class="ic"><use href="#i-arrow"/></svg></span></div>
+              <div class="mit-n"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><div class="nt"><b>50MB Limit &amp; Chunk Streaming</b></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+            </div>
+            <div class="map-row">
+              <div class="risk-n"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-folder"/></svg></span><div class="nt"><b>Path Traversal Risks</b></div></div>
+              <div class="maparr" aria-hidden="true"><span><svg class="ic"><use href="#i-arrow"/></svg></span></div>
+              <div class="mit-n"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><div class="nt"><b>Strict Path Canonicalization</b></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+            </div>
+            <div class="map-row">
+              <div class="risk-n"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-cloud"/></svg></span><div class="nt"><b>Unintended Cloud Egress</b></div></div>
+              <div class="maparr" aria-hidden="true"><span><svg class="ic"><use href="#i-arrow"/></svg></span></div>
+              <div class="mit-n"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-lock"/></svg></span><div class="nt"><b>Software Air-Gap Kill Switch</b></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+            </div>
+            <div class="map-row">
+              <div class="risk-n"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-robot"/></svg></span><div class="nt"><b>Portal Captcha &amp; Anti-Bot</b></div></div>
+              <div class="maparr" aria-hidden="true"><span><svg class="ic"><use href="#i-arrow"/></svg></span></div>
+              <div class="mit-n"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-usercheck"/></svg></span><div class="nt"><b>Human-in-the-Loop Takeover</b></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>VERIFIED</span></div>
+            </div>
+            <div class="map-row">
+              <div class="risk-n"><span class="nic sm mut" aria-hidden="true"><svg class="ic"><use href="#i-key"/></svg></span><div class="nt"><b>Plaintext Session Storage</b></div></div>
+              <div class="maparr" aria-hidden="true"><span><svg class="ic"><use href="#i-arrow"/></svg></span></div>
+              <div class="mit-n"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-shield"/></svg></span><div class="nt"><b>Encrypted Vault &amp; TPM2 Keystore</b></div><span class="badge b-tgt"><svg class="ic"><use href="#i-diamond"/></svg>TARGET</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="sfoot">
+      <div class="fmeta"><span class="mini acc" aria-hidden="true"><svg class="ic"><use href="#i-shield"/></svg></span>Remediation Status: 23 architectural audit points triaged; critical path traversal &amp; egress blocked</div>
+      <span class="pageno">SLIDE 04 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ================= SLIDE 5 ================= -->
+  <section class="slide" role="group" aria-roledescription="slide" aria-label="5 of 6 — Impact and Benefits">
+    <div class="shead">
+      <div>
+        <div class="eyebrow"><span class="dot" aria-hidden="true"></span>Slide 5 — Impact &amp; Benefits</div>
+        <h2 class="stitle">Government Value Proposition &amp; Sovereign ROI</h2>
+        <p class="ssub">High-trust automation, operational velocity, and full compliance with national data sovereignty standards.</p>
+      </div>
+      <div class="hbadges"><span class="tag">VALUE &amp; IMPACT</span></div>
+    </div>
+
+    <div class="body">
+      <div class="chain">
+        <div class="cnode"><span class="cn-t">SENSITIVE GOV WORKFLOW</span><span class="cn-s">Procurement · Tenders · Policy Specs</span></div>
+        <span class="carr" aria-hidden="true"><svg class="ic"><use href="#i-arrow"/></svg></span>
+        <div class="cnode"><span class="cn-t">SOVEREIGN WORKBENCH</span><span class="cn-s">Local Processing + Browser Agent</span></div>
+        <span class="carr" aria-hidden="true"><svg class="ic"><use href="#i-arrow"/></svg></span>
+        <div class="cnode"><span class="cn-t">SECURITY &amp; DATA BOUNDARY</span><span class="cn-s">Zero unconsented egress</span></div>
+        <span class="carr" aria-hidden="true"><svg class="ic"><use href="#i-arrow"/></svg></span>
+        <div class="cnode"><span class="cn-t">OPERATIONAL EFFICIENCY</span><span class="cn-s">Automates repetitive portal actions</span></div>
+        <span class="carr" aria-hidden="true"><svg class="ic"><use href="#i-arrow"/></svg></span>
+        <div class="cnode"><span class="cn-t">NATIONAL SOVEREIGNTY</span><span class="cn-s">DPDP Act &amp; MeitY Guidelines</span></div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="stat2"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-lock"/></svg></span><div><span class="kval">100% LOCAL</span><span class="ktitle">Data Boundary Sovereignty</span><span class="badge b-ver kbadge"><svg class="ic"><use href="#i-check"/></svg>SOVEREIGN MODE</span></div></div>
+        <div class="stat2"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-zap"/></svg></span><div><span class="kval">~80% VELOCITY</span><span class="ktitle">Automated Form Filling</span><span class="badge b-ver kbadge"><svg class="ic"><use href="#i-check"/></svg>MEASURED ON TENDERS</span></div></div>
+        <div class="stat2"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-route"/></svg></span><div><span class="kval">ZERO LOCK-IN</span><span class="ktitle">Connectivity Independence</span><span class="badge b-ver kbadge"><svg class="ic"><use href="#i-check"/></svg>OPEN WEIGHTS</span></div></div>
+        <div class="stat2"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-clip"/></svg></span><div><span class="kval">HUMAN CHECK</span><span class="ktitle">Deterministic Audit Trail</span><span class="badge b-ver kbadge"><svg class="ic"><use href="#i-check"/></svg>COMPLIANCE</span></div></div>
+        <div class="stat2"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-laptop"/></svg></span><div><span class="kval">OFFICE PC</span><span class="ktitle">Workstation Viability</span><span class="badge b-ver kbadge"><svg class="ic"><use href="#i-check"/></svg>FOOTPRINT</span></div></div>
+        <div class="stat2"><span class="nic" aria-hidden="true"><svg class="ic"><use href="#i-shield"/></svg></span><div><span class="kval">DPDP ALIGNED</span><span class="ktitle">Regulatory Alignment</span><span class="badge b-ver kbadge"><svg class="ic"><use href="#i-check"/></svg>REGULATORY</span></div></div>
+      </div>
+    </div>
+
+    <footer class="sfoot">
+      <div class="fmeta"><span class="mini acc" aria-hidden="true"><svg class="ic"><use href="#i-chart"/></svg></span>Measured Impact: Realistic time savings through automation, not hypothetical AI claims</div>
+      <span class="pageno">SLIDE 05 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ================= SLIDE 6 ================= -->
+  <section class="slide" role="group" aria-roledescription="slide" aria-label="6 of 6 — Research and References">
+    <div class="shead">
+      <div>
+        <div class="eyebrow"><span class="dot" aria-hidden="true"></span>Slide 6 — Research &amp; References</div>
+        <h2 class="stitle">Academic Foundations, Standards &amp; Verification</h2>
+        <p class="ssub">Peer-reviewed research in edge quantization, autonomous web agents, and government cyber standards.</p>
+      </div>
+      <div class="hbadges"><span class="tag">REFERENCES &amp; VALIDATION</span></div>
+    </div>
+
+    <div class="body">
+      <div class="s6-grid">
+        <div>
+          <div class="seclabel"><svg class="ic"><use href="#i-book"/></svg>Sources</div>
+          <div class="ref-grid">
+            <div class="ref2"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-chip"/></svg></span><div class="nt"><span class="refnum">[01]</span><b>Local LLM Inference &amp; 4-bit Edge Quantization</b><span>Touvron et al. (Meta AI, 2023) • Dettmers et al. (QLoRA, NeurIPS 2023)</span></div></div>
+            <div class="ref2"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-robot"/></svg></span><div class="nt"><span class="refnum">[02]</span><b>Autonomous Web Agents &amp; Portal Automation</b><span>Zhou et al. (WebArena, ICLR 2024)</span></div></div>
+            <div class="ref2"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-database"/></svg></span><div class="nt"><span class="refnum">[03]</span><b>Retrieval-Augmented Generation</b><span>Lewis et al. (NeurIPS 2020)</span></div></div>
+            <div class="ref2"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-shield"/></svg></span><div class="nt"><span class="refnum">[04]</span><b>National Cyber Security &amp; Data Sovereignty</b><span>MeitY &amp; CERT-In Guidelines (2023)</span></div></div>
+            <div class="ref2"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-lock"/></svg></span><div class="nt"><span class="refnum">[05]</span><b>Zero Trust Architecture &amp; LLM Security</b><span>NIST SP 800-207 • OWASP Top 10 for LLM (2025)</span></div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="seclabel"><svg class="ic"><use href="#i-clip"/></svg>Verification Pipeline</div>
+          <div class="pipe">
+            <div class="vnode"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-doc"/></svg></span><div class="nt"><b>1. Functional Prototype Testing</b></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>PASS</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="vnode"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-shield"/></svg></span><div class="nt"><b>2. Adversarial Security Audit</b></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>23 FINDINGS TRIAGED</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="vnode"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-robot"/></svg></span><div class="nt"><b>3. Playwright Automation Pipeline</b></div><span class="badge b-ver"><svg class="ic"><use href="#i-check"/></svg>PASS</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="vnode"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-zap"/></svg></span><div class="nt"><b>4. Hybrid Performance Benchmarking</b></div><span class="badge b-hyb"><svg class="ic"><use href="#i-half"/></svg>TESTED</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="vnode"><span class="nic sm" aria-hidden="true"><svg class="ic"><use href="#i-lock"/></svg></span><div class="nt"><b>5. Air-Gap Hardware Certification</b></div><span class="badge b-tgt"><svg class="ic"><use href="#i-diamond"/></svg>TARGET ROADMAP</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="sfoot">
+      <div class="fmeta"><span class="mini acc" aria-hidden="true"><svg class="ic"><use href="#i-book"/></svg></span>Rigorous Engineering: Built on academic consensus and empirical security verification</div>
+      <span class="pageno">SLIDE 06 / 06</span>
+    </footer>
+  </section>
+
+</div>
+</main>
+
+<!-- ================= CONTROLS ================= -->
+<div class="edge edge-l" id="edgeL" aria-hidden="true"><svg class="ic"><use href="#i-chl"/></svg></div>
+<div class="edge edge-r" id="edgeR" aria-hidden="true"><svg class="ic"><use href="#i-chr"/></svg></div>
+<button type="button" class="navb prev" id="prevBtn" aria-label="Previous slide (Left arrow or Backspace)"><svg class="ic"><use href="#i-chl"/></svg></button>
+<button type="button" class="navb next" id="nextBtn" aria-label="Next slide (Right arrow or Space)"><svg class="ic"><use href="#i-chr"/></svg></button>
+<div class="hint" aria-hidden="true"><b>←→</b> Navigate &nbsp;·&nbsp; <b>1–6</b> Jump &nbsp;·&nbsp; <b>F</b> Fullscreen &nbsp;·&nbsp; <b>P</b> Print</div>
+
+<noscript><style>.frame{position:static;transform:none;width:auto;height:auto}.slide{position:relative;opacity:1;visibility:visible;pointer-events:auto;margin:24px auto}</style></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var DW = 1280, DH = 720;
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var dots = Array.prototype.slice.call(document.querySelectorAll(".ndot"));
+  var N = slides.length;
+  var cur = -1;
+  var frame = document.getElementById("frame");
+  var stage = document.getElementById("stage");
+  var pfill = document.getElementById("pfill");
+  var counter = document.getElementById("counter");
+  var prevBtn = document.getElementById("prevBtn");
+  var nextBtn = document.getElementById("nextBtn");
+  var mqMobile = window.matchMedia("(max-width: 820px)");
+
+  function isDoc(){ return mqMobile.matches; }
+
+  function fit(){
+    document.body.classList.toggle("doc", isDoc());
+    if(!isDoc()){
+      var r = stage.getBoundingClientRect();
+      var s = Math.min(r.width / DW, r.height / DH);
+      frame.style.transform = "translate(-50%,-50%) scale(" + s + ")";
+      stage.scrollTop = 0;
+    } else {
+      frame.style.transform = "none";
+    }
+  }
+
+  function go(n){
+    n = Math.max(0, Math.min(N - 1, n));
+    if(n === cur) return;
+    cur = n;
+    for(var k = 0; k < N; k++){
+      var on = (k === n);
+      slides[k].classList.toggle("active", on);
+      slides[k].setAttribute("aria-hidden", String(!on));
+      if(dots[k]) dots[k].classList.toggle("active", on);
+    }
+    counter.textContent = (n + 1) + " / " + N;
+    pfill.style.width = "calc((100% - 6px) * " + ((n + 1) / N) + ")";
+    prevBtn.disabled = (n === 0);
+    nextBtn.disabled = (n === N - 1);
+    if(isDoc()) stage.scrollTop = 0;
+  }
+
+  function next(){ go(cur + 1); }
+  function prev(){ go(cur - 1); }
+
+  function toggleFS(){
+    var d = document;
+    if(d.fullscreenElement || d.webkitFullscreenElement){
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var fn = el.requestFullscreen || el.webkitRequestFullscreen;
+      if(fn){ var p = fn.call(el); if(p && p.catch) p.catch(function(){}); }
+    }
+  }
+
+  prevBtn.addEventListener("click", prev);
+  nextBtn.addEventListener("click", next);
+  document.getElementById("fsbtn").addEventListener("click", toggleFS);
+  document.getElementById("printbtn").addEventListener("click", function(){ window.print(); });
+  document.getElementById("edgeL").addEventListener("click", prev);
+  document.getElementById("edgeR").addEventListener("click", next);
+  dots.forEach(function(d){
+    d.addEventListener("click", function(){ go(parseInt(d.getAttribute("data-target"), 10)); });
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "ArrowRight" || e.key === " "){ e.preventDefault(); e.shiftKey ? prev() : next(); }
+    else if(e.key === "ArrowLeft" || e.key === "Backspace"){ e.preventDefault(); prev(); }
+    else if(e.key === "Home"){ e.preventDefault(); go(0); }
+    else if(e.key === "End"){ e.preventDefault(); go(N - 1); }
+    else if(e.key === "f" || e.key === "F"){ toggleFS(); }
+    else if(e.key === "p" || e.key === "P"){ window.print(); }
+    else if(e.key >= "1" && e.key <= String(N)){ go(parseInt(e.key, 10) - 1); }
+  });
+
+  var tx = 0, ty = 0, tOn = false;
+  stage.addEventListener("touchstart", function(e){
+    if(e.touches.length !== 1) return;
+    tx = e.touches[0].clientX; ty = e.touches[0].clientY; tOn = true;
+  }, {passive:true});
+  stage.addEventListener("touchend", function(e){
+    if(!tOn) return; tOn = false;
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if(Math.abs(dx) > 60 && Math.abs(dy) < 90 && Math.abs(dx) > Math.abs(dy) * 1.2){
+      dx < 0 ? next() : prev();
+    }
+  }, {passive:true});
+
+  window.addEventListener("resize", fit);
+  if(mqMobile.addEventListener) mqMobile.addEventListener("change", fit);
+
+  fit();
+  go(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+{
+  "project": "Sovereign On-Premise Agentic AI Workbench (SIH PSC26117)",
+  "total_artifacts": 13,
+  "master_file": "SDLC_Master_Specification.md",
+  "total_master_characters": 74323,
+  "artifacts": [
+    {
+      "sequence": 1,
+      "filename": "01_BRD.md",
+      "title": "Business Requirements Document",
+      "characters": 8224
+    },
+    {
+      "sequence": 2,
+      "filename": "02_PRD.md",
+      "title": "Product Requirements Document",
+      "characters": 7587
+    },
+    {
+      "sequence": 3,
+      "filename": "03_User_Journeys.md",
+      "title": "User Journey Maps & Flowcharts",
+      "characters": 6676
+    },
+    {
+      "sequence": 4,
+      "filename": "04_UI_UX_Specs.md",
+      "title": "UI/UX Design Specifications",
+      "characters": 5222
+    },
+    {
+      "sequence": 5,
+      "filename": "05_Architecture_Diagram.md",
+      "title": "System Architecture Diagram (High-Level)",
+      "characters": 5343
+    },
+    {
+      "sequence": 6,
+      "filename": "06_TRD.md",
+      "title": "Technical Requirements Document",
+      "characters": 3935
+    },
+    {
+      "sequence": 7,
+      "filename": "07_Detailed_Design.md",
+      "title": "Detailed Design Document (Low-Level)",
+      "characters": 6375
+    },
+    {
+      "sequence": 8,
+      "filename": "08_API_Contract_OpenAPI.md",
+      "title": "API Contract Specification (OpenAPI 3.0.3)",
+      "characters": 6777
+    },
+    {
+      "sequence": 9,
+      "filename": "09_Implementation_Plan.md",
+      "title": "Implementation Plan & Sprint Breakdown",
+      "characters": 4044
+    },
+    {
+      "sequence": 10,
+      "filename": "10_Test_Strategy.md",
+      "title": "Test Strategy & Quality Assurance Plan",
+      "characters": 3769
+    },
+    {
+      "sequence": 11,
+      "filename": "11_ADRs.md",
+      "title": "Architecture Decision Records",
+      "characters": 5087
+    },
+    {
+      "sequence": 12,
+      "filename": "12_Security_Compliance.md",
+      "title": "Security, Threat Model & Compliance Matrix",
+      "characters": 3445
+    },
+    {
+      "sequence": 13,
+      "filename": "13_Runbook_Deployment.md",
+      "title": "Runbook & Deployment Playbook",
+      "characters": 4874
+    }
+  ]
+}

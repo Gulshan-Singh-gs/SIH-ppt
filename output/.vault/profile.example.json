@@ -1,0 +1,19 @@
+{
+  "name": "Officer (Template Profile)",
+  "role": "Procurement Lead",
+  "avatar_preset": "avatar_1",
+  "custom_avatar_b64": null,
+  "password_hash": "",
+  "password_salt": "",
+  "security_question_1": "What is your operational designation?",
+  "security_answer_1_hash": "",
+  "security_question_2": "What is the department code?",
+  "security_answer_2_hash": "",
+  "recovery_key_hash": "",
+  "is_locked": false,
+  "locked_at": null,
+  "failed_attempts": 0,
+  "lock_timeout_until": null,
+  "last_login": "2026-09-01 10:00:00",
+  "created_at": "2026-09-01 10:00:00"
+}
