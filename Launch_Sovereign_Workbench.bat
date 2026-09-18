@@ -32,13 +32,14 @@ if %errorlevel% equ 0 (
 ) else (
     echo       [NOTE] Standby mode. Local fallback synthesizer ready.
 )
-echo.
-if "%NETWORK_MODE%"=="LAN" (
-    echo [3/3] Starting FastAPI Server in LAN Access Mode (0.0.0.0:8001)...
-    echo       mDNS Discovery: http://ai-workbench.local:8001
-) else (
-    echo [3/3] Starting FastAPI Server in LOCAL_ONLY Mode (127.0.0.1:8001)...
+:: Ensure Windows Firewall allows port 8001 for seamless mobile LAN access
+netsh advfirewall firewall show rule name="Sovereign AI Workbench" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo       Configuring Windows Firewall for local mobile/tablet connection...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd -ArgumentList '/c netsh advfirewall firewall add rule name=\"Sovereign AI Workbench\" dir=in action=allow protocol=TCP localport=8001 profile=any' -Verb RunAs -WindowStyle Hidden" >nul 2>&1
 )
+
+echo [3/3] Starting FastAPI Server on port 8001...
 echo Opening Sovereign Workbench in default browser...
 start "" "http://127.0.0.1:8001"
 echo.

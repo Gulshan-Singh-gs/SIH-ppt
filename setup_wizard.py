@@ -250,6 +250,17 @@ class ProvisioningWizard:
             except Exception as e:
                 print(f"Model pull notice (will fall back to onboard local synthesizer): {e}")
 
+            # Configure Windows Firewall rule for Port 8001 (Automated UAC elevation)
+            if sys.platform == "win32":
+                self._update_status("Configuring Windows Firewall for local network access...", progress=85)
+                try:
+                    # Request UAC prompt to automatically add inbound rule for port 8001
+                    fw_cmd = 'netsh advfirewall firewall show rule name=\\"Sovereign AI Workbench\\" >nul 2>&1 || netsh advfirewall firewall add rule name=\\"Sovereign AI Workbench\\" dir=in action=allow protocol=TCP localport=8001 profile=any'
+                    ps_launcher = f"Start-Process cmd -ArgumentList '/c {fw_cmd}' -Verb RunAs -WindowStyle Hidden"
+                    subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_launcher], check=False)
+                except Exception as ex:
+                    print(f"Firewall automation notice: {ex}")
+
             # ------------------------------------------------------------
             # Step 4: Launch Sovereign Workbench Server & Browser
             # ------------------------------------------------------------
