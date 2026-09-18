@@ -8,10 +8,11 @@ echo   Instant Cookie Session Vault (Zero OTP Delay)
 echo ====================================================================
 echo.
 
-:: Check if user requested direct launch flag or if wizard should run
+:: Check if setup has already been completed or user requested direct launch
+if exist "%~dp0.setup_completed" goto DIRECT_LAUNCH
 if "%1"=="--direct" goto DIRECT_LAUNCH
 
-echo [1/3] Launching Sovereign Automated Setup & Permissions Panel...
+echo [1/3] Launching Sovereign Automated Setup & Permissions Panel (First Run)...
 python setup_wizard.py
 if %errorlevel% equ 0 (
     exit /b 0

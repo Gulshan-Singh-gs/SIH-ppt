@@ -117,3 +117,7 @@ Desktop.ini
 # Graft local graph cache
 /graft/
 .graft/
+
+# Setup completed marker
+.setup_completed
+*.setup_completed

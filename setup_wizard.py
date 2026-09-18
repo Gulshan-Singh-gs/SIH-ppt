@@ -38,18 +38,30 @@ OLLAMA_WINDOWS_INSTALLER_URL = "https://ollama.com/download/OllamaSetup.exe"
 
 class ProvisioningWizard:
     def __init__(self):
+        # Enable High-DPI crisp font rendering on Windows
+        try:
+            import ctypes
+            # Shcore SetProcessDpiAwareness(1) -> System DPI Aware (prevents bitmap scaling blur)
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except Exception:
+                ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+
         self.root = tk.Tk()
         self.root.title("Sovereign AI Workbench — Automated Provisioning Wizard")
-        self.root.geometry("640x620")
+        self.root.geometry("680x670")
         self.root.resizable(False, False)
 
         # Style & Themes
-        self.bg_color = "#f4f6f9"
+        self.bg_color = "#f8fafc"
         self.card_bg = "#ffffff"
-        self.primary_color = "#4f46e5"
-        self.emerald_color = "#059669"
-        self.text_color = "#1e293b"
-        self.muted_color = "#64748b"
+        self.primary_color = "#4338ca"  # Richer Indigo
+        self.primary_hover = "#3730a3"
+        self.emerald_color = "#047857"
+        self.text_color = "#0f172a"     # Crisp dark slate
+        self.muted_color = "#475569"    # High contrast slate
 
         self.root.configure(bg=self.bg_color)
         self._apply_styles()
@@ -70,25 +82,25 @@ class ProvisioningWizard:
     def _apply_styles(self):
         style = ttk.Style()
         style.theme_use("clam")
-        style.configure("TProgressbar", thickness=18, troughcolor="#e2e8f0", background=self.emerald_color)
+        style.configure("TProgressbar", thickness=16, troughcolor="#e2e8f0", background=self.emerald_color)
 
     def _build_ui(self):
         # 1. Header Banner
-        header = tk.Frame(self.root, bg=self.card_bg, padx=20, pady=16, highlightbackground="#e2e8f0", highlightthickness=1)
+        header = tk.Frame(self.root, bg=self.card_bg, padx=24, pady=18, highlightbackground="#e2e8f0", highlightthickness=1)
         header.pack(fill="x", padx=0, pady=0)
 
-        title_lbl = tk.Label(header, text="Sovereign AI Workbench (SIH PSC26117)", font=("Segoe UI", 15, "bold"), fg=self.primary_color, bg=self.card_bg)
+        title_lbl = tk.Label(header, text="Sovereign AI Workbench (SIH PSC26117)", font=("Segoe UI", 16, "bold"), fg=self.primary_color, bg=self.card_bg)
         title_lbl.pack(anchor="w")
 
-        subtitle_lbl = tk.Label(header, text="One-Click Autonomous Workspace Provisioner • 100% On-Premise", font=("Segoe UI", 9), fg=self.muted_color, bg=self.card_bg)
-        subtitle_lbl.pack(anchor="w", pady=(2, 0))
+        subtitle_lbl = tk.Label(header, text="One-Click Autonomous Workspace Provisioner • 100% On-Premise Air-Gapped AI", font=("Segoe UI", 9, "bold"), fg=self.muted_color, bg=self.card_bg)
+        subtitle_lbl.pack(anchor="w", pady=(3, 0))
 
         # 2. Main Content Frame
-        main_frame = tk.Frame(self.root, bg=self.bg_color, padx=20, pady=14)
+        main_frame = tk.Frame(self.root, bg=self.bg_color, padx=22, pady=14)
         main_frame.pack(fill="both", expand=True)
 
         # Permissions & Action Summary Card
-        card = tk.Frame(main_frame, bg=self.card_bg, padx=16, pady=12, highlightbackground="#cbd5e1", highlightthickness=1)
+        card = tk.Frame(main_frame, bg=self.card_bg, padx=18, pady=14, highlightbackground="#cbd5e1", highlightthickness=1)
         card.pack(fill="x", pady=(0, 10))
 
         card_title = tk.Label(card, text="Permissions & Download Summary", font=("Segoe UI", 11, "bold"), fg=self.text_color, bg=self.card_bg)
@@ -100,10 +112,10 @@ class ProvisioningWizard:
                                        "• Local AI Engine: Ollama Local Daemon & Quantized Open-Weight Model (~1.3 GB)\n"
                                        "• Air-Gap Guarantee: No personal data or documents leave your computer.",
                             font=("Segoe UI", 9), fg=self.text_color, bg=self.card_bg, justify="left")
-        desc_lbl.pack(anchor="w", pady=(0, 8))
+        desc_lbl.pack(anchor="w", pady=(0, 4))
 
         # Folder Chooser Section
-        folder_frame = tk.Frame(main_frame, bg=self.card_bg, padx=16, pady=12, highlightbackground="#cbd5e1", highlightthickness=1)
+        folder_frame = tk.Frame(main_frame, bg=self.card_bg, padx=18, pady=12, highlightbackground="#cbd5e1", highlightthickness=1)
         folder_frame.pack(fill="x", pady=(0, 10))
 
         lbl_folder_title = tk.Label(folder_frame, text="Choose Workspace Installation Folder:", font=("Segoe UI", 10, "bold"), fg=self.text_color, bg=self.card_bg)
@@ -115,11 +127,11 @@ class ProvisioningWizard:
         self.folder_entry = tk.Entry(folder_input_row, textvariable=self.target_folder_var, font=("Segoe UI", 9), bg="#f8fafc", relief="solid", bd=1)
         self.folder_entry.pack(side="left", fill="x", expand=True, ipady=4, padx=(0, 8))
 
-        btn_browse = tk.Button(folder_input_row, text="Browse Folder...", font=("Segoe UI", 9, "bold"), bg="#e2e8f0", fg=self.text_color, relief="flat", padx=10, pady=2, command=self._browse_folder)
+        btn_browse = tk.Button(folder_input_row, text="Browse Folder...", font=("Segoe UI", 9, "bold"), bg="#e2e8f0", fg=self.text_color, relief="flat", padx=12, pady=3, cursor="hand2", command=self._browse_folder)
         btn_browse.pack(side="right")
 
         # Options Frame (Model selection & LAN access)
-        opts_frame = tk.Frame(main_frame, bg=self.card_bg, padx=16, pady=12, highlightbackground="#cbd5e1", highlightthickness=1)
+        opts_frame = tk.Frame(main_frame, bg=self.card_bg, padx=18, pady=12, highlightbackground="#cbd5e1", highlightthickness=1)
         opts_frame.pack(fill="x", pady=(0, 10))
 
         lbl_model = tk.Label(opts_frame, text="Select Local AI Model:", font=("Segoe UI", 10, "bold"), fg=self.text_color, bg=self.card_bg)
@@ -128,13 +140,13 @@ class ProvisioningWizard:
         model_row = tk.Frame(opts_frame, bg=self.card_bg)
         model_row.pack(fill="x", pady=(0, 6))
 
-        rb1 = tk.Radiobutton(model_row, text="Llama 3.2 1B (Meta • Fast • 1.3 GB) [Recommended]", variable=self.selected_model_var, value="llama3.2:1b", font=("Segoe UI", 9), bg=self.card_bg, fg=self.text_color)
+        rb1 = tk.Radiobutton(model_row, text="Llama 3.2 1B (Meta • Fast • 1.3 GB) [Recommended]", variable=self.selected_model_var, value="llama3.2:1b", font=("Segoe UI", 9), bg=self.card_bg, fg=self.text_color, activebackground=self.card_bg)
         rb1.pack(anchor="w")
 
-        rb2 = tk.Radiobutton(model_row, text="Qwen 2.5 0.5B (Ultra-Lightweight • 0.39 GB)", variable=self.selected_model_var, value="qwen2.5:0.5b", font=("Segoe UI", 9), bg=self.card_bg, fg=self.text_color)
+        rb2 = tk.Radiobutton(model_row, text="Qwen 2.5 0.5B (Ultra-Lightweight • 0.39 GB)", variable=self.selected_model_var, value="qwen2.5:0.5b", font=("Segoe UI", 9), bg=self.card_bg, fg=self.text_color, activebackground=self.card_bg)
         rb2.pack(anchor="w")
 
-        chk_lan = tk.Checkbutton(opts_frame, text="Enable Local Network (LAN) Access for mobile devices & tablets", variable=self.lan_mode_var, font=("Segoe UI", 9), bg=self.card_bg, fg=self.text_color)
+        chk_lan = tk.Checkbutton(opts_frame, text="Enable Local Network (LAN) Access for mobile devices & tablets", variable=self.lan_mode_var, font=("Segoe UI", 9), bg=self.card_bg, fg=self.text_color, activebackground=self.card_bg)
         chk_lan.pack(anchor="w", pady=(4, 0))
 
         # Progress & Status Display
@@ -142,16 +154,16 @@ class ProvisioningWizard:
         self.status_lbl.pack(anchor="w", pady=(2, 4))
 
         self.progress_bar = ttk.Progressbar(main_frame, style="TProgressbar", mode="determinate", maximum=100)
-        self.progress_bar.pack(fill="x", pady=(0, 10))
+        self.progress_bar.pack(fill="x", pady=(0, 8))
 
         # 3. Action Buttons Footer
-        footer = tk.Frame(self.root, bg=self.card_bg, padx=20, pady=12, highlightbackground="#e2e8f0", highlightthickness=1)
+        footer = tk.Frame(self.root, bg=self.card_bg, padx=22, pady=14, highlightbackground="#e2e8f0", highlightthickness=1)
         footer.pack(fill="x", side="bottom")
 
-        self.btn_cancel = tk.Button(footer, text="Exit", font=("Segoe UI", 9), bg="#f1f5f9", fg=self.text_color, relief="flat", padx=16, pady=6, command=self.root.quit)
+        self.btn_cancel = tk.Button(footer, text="Exit", font=("Segoe UI", 9, "bold"), bg="#f1f5f9", fg=self.muted_color, relief="flat", padx=18, pady=6, cursor="hand2", command=self.root.quit)
         self.btn_cancel.pack(side="left")
 
-        self.btn_start = tk.Button(footer, text="Start Automated Setup & Launch", font=("Segoe UI", 10, "bold"), bg=self.primary_color, fg="#ffffff", relief="flat", padx=20, pady=6, cursor="hand2", command=self._start_provisioning)
+        self.btn_start = tk.Button(footer, text="Start Automated Setup & Launch", font=("Segoe UI", 10, "bold"), bg=self.primary_color, fg="#ffffff", relief="flat", padx=22, pady=6, cursor="hand2", command=self._start_provisioning)
         self.btn_start.pack(side="right")
 
     def _browse_folder(self):
@@ -253,6 +265,20 @@ class ProvisioningWizard:
                 os.environ["NETWORK_MODE"] = "LAN"
             else:
                 os.environ["NETWORK_MODE"] = "LOCAL_ONLY"
+
+            # Write setup completion marker to prevent wizard from popping up repeatedly
+            try:
+                marker_file = BASE_DIR / ".setup_completed"
+                marker_data = {
+                    "installed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "target_workspace": str(target_dir),
+                    "model": chosen_model,
+                    "lan_mode": self.lan_mode_var.get()
+                }
+                with open(marker_file, "w", encoding="utf-8") as mf:
+                    json.dump(marker_data, mf, indent=2)
+            except Exception:
+                pass
 
             # Launch server in background
             server_cmd = [sys.executable, str(SERVER_SCRIPT)]
