@@ -2411,7 +2411,9 @@ if __name__ == "__main__":
     network_mode = MODE_LAN if env_mode == MODE_LAN else MODE_LOCAL_ONLY
     lan_security_mgr.set_network_mode(network_mode)
 
-    listen_host = "0.0.0.0" if network_mode == MODE_LAN else "127.0.0.1"
+    # Bind socket to 0.0.0.0 so switching between LOCAL_ONLY and LAN works dynamically at runtime.
+    # Security is strictly governed by lan_network_security_guard middleware.
+    listen_host = "0.0.0.0"
     port = find_free_port(8001, bind_host=listen_host)
     os.environ["PORT"] = str(port)
 
@@ -2419,11 +2421,10 @@ if __name__ == "__main__":
 
     print("=" * 70)
     print(">> Starting Sovereign Agentic AI Workbench (SIH PSC26117)")
-    print(f"Network Mode: {network_mode} (Host Bind: {listen_host})")
+    print(f"Network Governance Mode: {network_mode} (Host Bind: {listen_host})")
     print(f"Dashboard URL (Host Workstation): http://127.0.0.1:{port}")
-    if network_mode == MODE_LAN:
-        print(f"LAN Access URL (Authorized Devices): http://{lan_ip}:{port}")
-        print(f"mDNS Local Discovery URL: http://ai-workbench.local:{port}")
+    print(f"LAN Access URL (Authorized Devices): http://{lan_ip}:{port}")
+    print(f"mDNS Local Discovery URL: http://ai-workbench.local:{port}")
     print(f"Mock GeM Portal: http://127.0.0.1:{port}/portal/gem-tenders")
     print("=" * 70)
 
