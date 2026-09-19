@@ -4242,7 +4242,12 @@ Sincerely,
 
   async function loadLANStatusUI() {
     try {
-      const res = await fetch("/api/lan/status");
+      const storedToken = localStorage.getItem("sov_lan_token") || "";
+      const headers = {};
+      if (storedToken) {
+        headers["X-Session-Token"] = storedToken;
+      }
+      const res = await fetch("/api/lan/status", { headers });
       const data = await res.json();
       if (!res.ok || data.status !== "SUCCESS") {
         if (res.status === 401 && remotePairingModal) {
@@ -4254,6 +4259,8 @@ Sincerely,
       // Check if current device is an unauthenticated remote client
       if (!data.client.is_local_host && !data.client.is_authorized && remotePairingModal) {
         remotePairingModal.style.display = "flex";
+      } else if (data.client.is_authorized && remotePairingModal) {
+        remotePairingModal.style.display = "none";
       }
 
       // Update UI Status Badges
@@ -4402,8 +4409,16 @@ Sincerely,
           localStorage.setItem("sov_lan_token", data.session_token);
           if (remotePairingModal) remotePairingModal.style.display = "none";
           appendLog("SECURITY", `Device successfully authenticated and paired: ${devName}`, "success");
+          
+          // Clean URL so refresh does not re-attempt pairing with an already-used PIN
+          try {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({ path: cleanUrl }, "", cleanUrl);
+          } catch (_) {}
+
           loadLANStatusUI();
-          location.reload();
+          // Reload without query parameters so clean dashboard loads
+          window.location.href = window.location.protocol + "//" + window.location.host + window.location.pathname;
         } else {
           if (remotePairErrorMsg) {
             remotePairErrorMsg.textContent = data.error || "Invalid or expired pairing code.";
@@ -4425,7 +4440,9 @@ Sincerely,
     const pinFromUrl = urlParams.get("pin");
     if (pinFromUrl && inputRemotePairCode) {
       inputRemotePairCode.value = pinFromUrl;
-      if (remotePairingModal) {
+      // Only show pairing modal if not already authorized
+      const existingToken = localStorage.getItem("sov_lan_token");
+      if (!existingToken && remotePairingModal) {
         remotePairingModal.style.display = "flex";
       }
     }
