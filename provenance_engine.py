@@ -174,8 +174,11 @@ class ProvenanceEngine:
     def _split_into_evidential_blocks(cls, text: str) -> List[Dict[str, Any]]:
         """Splits text into chunks preserving page boundaries and headings."""
         blocks = []
-        # Check for page markers like [Page X] or [Page X, Section Y] or Page X of Y
-        page_pattern = re.compile(r"\[Page\s*(\d+)(?:,\s*(?:Section|Clause)\s*([^\]]+))?\]|Page\s+(\d+)\s+of\s+\d+", re.IGNORECASE)
+        # Check for page markers like --- Page X (Engine) --- or [Page X (Engine)] or [Page X, Section Y] or Page X of Y
+        page_pattern = re.compile(
+            r"(?:\[|\-\-\-)\s*Page\s*(\d+)(?:[,\s\(\-]+([^\]\)\-\n]+)?[\]\)\-]*)?|Page\s+(\d+)\s+of\s+\d+",
+            re.IGNORECASE
+        )
         
         paragraphs = text.split("\n\n")
         current_page = None

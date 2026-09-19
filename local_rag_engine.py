@@ -32,7 +32,8 @@ IGNORED_DIRS = {
 
 ALLOWED_EXTENSIONS = {
     ".py", ".js", ".ts", ".html", ".css", ".json", ".md", ".txt", ".yaml",
-    ".yml", ".sql", ".bat", ".sh", ".env.example", ".csv", ".tsv", ".docx", ".pdf", ".toml"
+    ".yml", ".sql", ".bat", ".sh", ".env.example", ".csv", ".tsv", ".docx", ".pdf", ".toml",
+    ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff"
 }
 
 
@@ -103,7 +104,7 @@ class LocalRAGEngine:
         graft_exe = shutil.which("graft") or shutil.which("graft.cmd")
         if not graft_exe:
             # Check global fallback path
-            custom_bin = Path(r"%USERPROFILE%\.graft_engine\node_modules\.bin\graft.cmd")
+            custom_bin = Path(r"C:\Users\Code66\.graft_engine\node_modules\.bin\graft.cmd")
             if custom_bin.exists():
                 graft_exe = str(custom_bin)
 
@@ -147,7 +148,7 @@ class LocalRAGEngine:
                         if p.name not in self.compressed_file_store:
                             try:
                                 ext = p.suffix.lower()
-                                if ext in {".pdf", ".docx", ".csv", ".tsv", ".png", ".jpg", ".jpeg"}:
+                                if ext in {".pdf", ".docx", ".csv", ".tsv", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff"}:
                                     parsed = DocumentProcessor.parse_file(p)
                                     text = parsed.get("extracted_text", "")
                                 else:
@@ -259,7 +260,7 @@ class LocalRAGEngine:
             rel_path = str(p.relative_to(target_dir)).replace("\\", "/")
             ext = p.suffix.lower()
             try:
-                if ext in {".pdf", ".docx", ".csv", ".tsv"}:
+                if ext in {".pdf", ".docx", ".csv", ".tsv", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff"}:
                     parsed = DocumentProcessor.parse_file(p)
                     content = parsed.get("extracted_text", "")
                     if not content:
@@ -576,7 +577,19 @@ class LocalRAGEngine:
             })
 
         scored_matches.sort(key=lambda x: x["score"], reverse=True)
-        top_docs = [m for m in scored_matches if m["score"] > 0][:4]
+        # Deduplicate matches by base filename so uploads/X and X don't duplicate
+        seen_base_names = set()
+        unique_matches = []
+        for m in scored_matches:
+            bname = Path(m["path"]).name
+            if bname not in seen_base_names:
+                seen_base_names.add(bname)
+                unique_matches.append(m)
+
+        top_docs = [m for m in unique_matches if m["score"] > 0][:3]
+        if not top_docs and unique_matches:
+            # If zero word matches, allow highest scoring or first available doc if query mentions filename
+            top_docs = unique_matches[:1]
 
         # Extract Evidence Citations
         evidence_bundle = ProvenanceEngine.extract_evidence(query, top_docs, max_citations=5)

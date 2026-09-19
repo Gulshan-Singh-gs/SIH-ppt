@@ -1073,6 +1073,7 @@ async def complete_dual_ocr(req: Request):
     # Immediately index into RAG memory so AI can query document!
     if merged.get("extracted_text"):
         rag_engine.add_single_document(file_name, merged.get("extracted_text", ""))
+        rag_engine.add_single_document(f"uploads/{file_name}", merged.get("extracted_text", ""))
 
     await ws_manager.broadcast({
         "type": "WORKBENCH_TELEMETRY",
