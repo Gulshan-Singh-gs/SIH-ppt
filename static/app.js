@@ -3107,6 +3107,8 @@ Sincerely,
       loadAuditLedgerUI();
     } else if (activePanel === panelSettingsLan) {
       loadLANStatusUI();
+    } else if (activePanel === panelSettingsSecurity) {
+      loadAirGapCredentialsUI();
     }
   }
 
@@ -3120,20 +3122,27 @@ Sincerely,
   if (tabBtnSettingsLan) tabBtnSettingsLan.addEventListener("click", () => switchSettingsTab(tabBtnSettingsLan, panelSettingsLan));
 
 
-  if (btnOpenSettings) {
-    btnOpenSettings.addEventListener("click", () => {
-      if (settingsModal) settingsModal.classList.add("show");
+  function openSettingsModal() {
+    if (settingsModal) {
+      settingsModal.classList.add("show");
       loadHardwareProfile();
       fetchProfile();
+    }
+  }
+
+  if (btnOpenSettings) {
+    btnOpenSettings.addEventListener("click", openSettingsModal);
+  }
+
+  if (sbBtnSettings) {
+    sbBtnSettings.addEventListener("click", () => {
+      closeSidebar();
+      openSettingsModal();
     });
   }
 
   if (btnOpenSettingsHero) {
-    btnOpenSettingsHero.addEventListener("click", () => {
-      if (settingsModal) settingsModal.classList.add("show");
-      loadHardwareProfile();
-      fetchProfile();
-    });
+    btnOpenSettingsHero.addEventListener("click", openSettingsModal);
   }
 
   if (settingsModal) {
@@ -3746,6 +3755,210 @@ Sincerely,
         appendLog("SECURITY", `All ${activeCount} saved logins verified valid and active.`, "success");
       } catch (e) {
         appendLog("ERROR", "Login verification error.", "error");
+      }
+    });
+  }
+
+  // ====================================================================
+  // AIR-GAP OFFICER CREDENTIALS & PLAYWRIGHT SESSION VAULT CONTROLLER
+  // ====================================================================
+  const airgapCredsList = document.getElementById("airgap-creds-list");
+  const badgeOfficerCredsCount = document.getElementById("badge-officer-creds-count");
+  const btnOpenAddCredModal = document.getElementById("btn-open-add-cred-modal");
+  const btnRefreshVaultCreds = document.getElementById("btn-refresh-vault-creds");
+  const airgapCredFormWrap = document.getElementById("airgap-cred-form-wrap");
+  const airgapCredFormTitle = document.getElementById("airgap-cred-form-title");
+  const btnCloseCredForm = document.getElementById("btn-close-cred-form");
+  const btnCancelCredForm = document.getElementById("btn-cancel-cred-form");
+  const btnSaveCredForm = document.getElementById("btn-save-cred-form");
+
+  const credDomainInput = document.getElementById("cred-domain-input");
+  const credNameInput = document.getElementById("cred-name-input");
+  const credRoleInput = document.getElementById("cred-role-input");
+  const credOrgInput = document.getElementById("cred-org-input");
+  const credCookiesInput = document.getElementById("cred-cookies-input");
+
+  let editingCredDomain = null;
+
+  async function loadAirGapCredentialsUI() {
+    if (!airgapCredsList) return;
+    try {
+      const res = await fetch("/api/workbench/sessions");
+      const data = await res.json();
+      if (res.ok && data.sessions) {
+        renderAirGapCredentials(data.sessions);
+      } else {
+        airgapCredsList.innerHTML = `<div style="padding: 12px; color: var(--rose); font-size: 12px;">Failed to load sessions.</div>`;
+      }
+    } catch (e) {
+      airgapCredsList.innerHTML = `<div style="padding: 12px; color: var(--rose); font-size: 12px;">Error connecting to Cookie Vault: ${e.message}</div>`;
+    }
+  }
+
+  function renderAirGapCredentials(sessions) {
+    if (!airgapCredsList) return;
+    if (badgeOfficerCredsCount) {
+      badgeOfficerCredsCount.textContent = `${sessions.length} Portal${sessions.length === 1 ? '' : 's'} Active`;
+    }
+
+    if (!sessions || sessions.length === 0) {
+      airgapCredsList.innerHTML = `
+        <div style="padding: 20px; text-align: center; color: var(--muted); background: var(--bg-card); border-radius: var(--r-tile); border: 1px dashed var(--line); font-size: 12px;">
+          No Officer credentials currently stored. Click <strong>+ Add Officer Credential</strong> to register authenticated SSO tokens for automated browser tasks.
+        </div>
+      `;
+      return;
+    }
+
+    airgapCredsList.innerHTML = "";
+    sessions.forEach(s => {
+      const card = document.createElement("div");
+      card.style.padding = "12px 14px";
+      card.style.background = "var(--bg-card)";
+      card.style.borderRadius = "var(--r-tile)";
+      card.style.border = "1px solid var(--line)";
+      card.style.display = "flex";
+      card.style.justifyContent = "space-between";
+      card.style.alignItems = "center";
+      card.style.gap = "12px";
+
+      card.innerHTML = `
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <strong style="font-size: 13px; color: var(--ink);">${escapeHtml(s.portal_name || s.domain)}</strong>
+            <span class="tag-sih" style="font-size: 10.5px; color: var(--acc); border-color: rgba(99, 102, 241, 0.3);">${escapeHtml(s.domain)}</span>
+            <span class="tag-sih" style="font-size: 10.5px; color: var(--emerald); border-color: rgba(16, 185, 129, 0.3);">
+              ● ${escapeHtml(s.status || 'Active')}
+            </span>
+          </div>
+          <div style="display: flex; gap: 14px; margin-top: 5px; font-size: 11.5px; color: var(--muted); flex-wrap: wrap;">
+            <span><strong style="color: var(--ink);">Officer:</strong> ${escapeHtml(s.user_role || 'Officer')}</span>
+            <span><strong style="color: var(--ink);">Dept:</strong> ${escapeHtml(s.organization || 'Government')}</span>
+            <span><strong style="color: var(--ink);">Cookies:</strong> ${s.cookie_count || 1} preserved</span>
+            ${s.saved_at ? `<span><strong style="color: var(--ink);">Saved:</strong> ${escapeHtml(s.saved_at)}</span>` : ''}
+          </div>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="btn-neumorph btn-edit-cred" data-domain="${escapeHtml(s.domain)}" style="padding: 5px 10px; font-size: 11px;">Edit</button>
+          <button class="btn-neumorph btn-delete-cred" data-domain="${escapeHtml(s.domain)}" style="padding: 5px 10px; font-size: 11px; color: var(--rose);">Delete</button>
+        </div>
+      `;
+      airgapCredsList.appendChild(card);
+    });
+
+    // Wire edit and delete buttons
+    airgapCredsList.querySelectorAll(".btn-edit-cred").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const dom = btn.dataset.domain;
+        const target = sessions.find(x => x.domain === dom);
+        if (target) {
+          editingCredDomain = dom;
+          if (airgapCredFormTitle) airgapCredFormTitle.textContent = `Update Officer Credentials (${dom})`;
+          if (credDomainInput) {
+            credDomainInput.value = target.domain;
+            credDomainInput.disabled = true;
+          }
+          if (credNameInput) credNameInput.value = target.portal_name || "";
+          if (credRoleInput) credRoleInput.value = target.user_role || "";
+          if (credOrgInput) credOrgInput.value = target.organization || "";
+          if (credCookiesInput) credCookiesInput.value = ""; // Don't expose secret tokens unless re-entered
+          if (airgapCredFormWrap) airgapCredFormWrap.style.display = "block";
+          if (airgapCredFormWrap) airgapCredFormWrap.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    });
+
+    airgapCredsList.querySelectorAll(".btn-delete-cred").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const dom = btn.dataset.domain;
+        if (confirm(`Remove Officer session credentials for domain: "${dom}"? Automated Playwright browser agent will no longer be able to auto-authenticate to this portal.`)) {
+          try {
+            const res = await fetch(`/api/workbench/sessions/${encodeURIComponent(dom)}`, { method: "DELETE" });
+            const data = await res.json();
+            if (res.ok) {
+              appendLog("AIR-GAP", `Officer credentials for ${dom} removed from vault.`, "warning");
+              loadAirGapCredentialsUI();
+            } else {
+              alert("Error deleting credential: " + (data.error || "Unknown error"));
+            }
+          } catch (e) {
+            alert("Delete request failed: " + e.message);
+          }
+        }
+      });
+    });
+  }
+
+  function openNewCredForm() {
+    editingCredDomain = null;
+    if (airgapCredFormTitle) airgapCredFormTitle.textContent = "Add Officer Portal Credentials";
+    if (credDomainInput) {
+      credDomainInput.value = "";
+      credDomainInput.disabled = false;
+    }
+    if (credNameInput) credNameInput.value = "";
+    if (credRoleInput) credRoleInput.value = "Section Officer / Procurement Officer";
+    if (credOrgInput) credOrgInput.value = "Ministry of Electronics and IT";
+    if (credCookiesInput) credCookiesInput.value = "";
+    if (airgapCredFormWrap) airgapCredFormWrap.style.display = "block";
+    if (airgapCredFormWrap) airgapCredFormWrap.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function closeCredForm() {
+    if (airgapCredFormWrap) airgapCredFormWrap.style.display = "none";
+    editingCredDomain = null;
+  }
+
+  if (btnOpenAddCredModal) btnOpenAddCredModal.addEventListener("click", openNewCredForm);
+  if (btnRefreshVaultCreds) btnRefreshVaultCreds.addEventListener("click", loadAirGapCredentialsUI);
+  if (btnCloseCredForm) btnCloseCredForm.addEventListener("click", closeCredForm);
+  if (btnCancelCredForm) btnCancelCredForm.addEventListener("click", closeCredForm);
+
+  if (btnSaveCredForm) {
+    btnSaveCredForm.addEventListener("click", async () => {
+      const domain = (credDomainInput ? credDomainInput.value : "").trim();
+      const portal_name = (credNameInput ? credNameInput.value : "").trim();
+      const user_role = (credRoleInput ? credRoleInput.value : "").trim();
+      const organization = (credOrgInput ? credOrgInput.value : "").trim();
+      const raw_cookies = (credCookiesInput ? credCookiesInput.value : "").trim();
+
+      if (!domain) {
+        alert("Portal Domain is required (e.g. gem.gov.in)");
+        return;
+      }
+
+      btnSaveCredForm.disabled = true;
+      btnSaveCredForm.textContent = "Saving...";
+
+      try {
+        const payload = {
+          domain: domain,
+          portal_name: portal_name || domain,
+          portal_url: `https://${domain}`,
+          user_role: user_role,
+          organization: organization,
+          raw_cookies: raw_cookies || undefined
+        };
+
+        const res = await fetch("/api/workbench/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          appendLog("AIR-GAP", `Officer credentials for ${domain} saved in local Cookie Vault.`, "success");
+          closeCredForm();
+          loadAirGapCredentialsUI();
+        } else {
+          alert("Error saving credential: " + (data.error || "Unknown error"));
+        }
+      } catch (e) {
+        alert("Failed to save credentials: " + e.message);
+      } finally {
+        btnSaveCredForm.disabled = false;
+        btnSaveCredForm.textContent = "Save to Air-Gap Vault";
       }
     });
   }

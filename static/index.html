@@ -150,6 +150,10 @@
           <span class="dot-indicator" style="background: var(--emerald); width: 8px; height: 8px;"></span>
           <span id="sovereign-boundary-label">LOCAL ONLY (SOVEREIGN)</span>
         </div>
+        <button id="btn-open-settings" class="btn-neumorph" title="Control Deck & System Settings" style="padding: 8px 14px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 7px; cursor: pointer;">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>Settings</span>
+        </button>
         <button id="btn-open-portal-iframe" class="btn-neumorph primary" title="Open GeM Portal Live View" style="padding: 8px 16px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: none;">
           <svg class="svg-icon sm" viewBox="0 0 24 24">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -1081,6 +1085,71 @@
                 </div>
               </div>
 
+              <!-- Automated Playwright Browser Agent - Officer Credentials & Session Vault -->
+              <div style="padding: 16px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <strong style="font-size: 13.5px; color: var(--ink);">Automated Playwright Agent — Officer Credentials & Session Vault</strong>
+                      <span id="badge-officer-creds-count" class="tag-sih" style="color: var(--emerald); border-color: rgba(16, 185, 129, 0.3);">0 Portals Active</span>
+                    </div>
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+                      Store authenticated Officer SSO session tokens and cookies. The Autonomous Playwright Browser Agent injects these directly into isolated headless browser contexts for instant portal authentication without passwords or OTP delays.
+                    </p>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn-neumorph primary" id="btn-open-add-cred-modal" style="padding: 6px 14px; font-size: 12px;">+ Add Officer Credential</button>
+                    <button class="btn-neumorph" id="btn-refresh-vault-creds" style="padding: 6px 12px; font-size: 12px;" title="Refresh Sessions">↻</button>
+                  </div>
+                </div>
+
+                <!-- Credential List Container -->
+                <div id="airgap-creds-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+                  <div style="padding: 16px; text-align: center; color: var(--muted); font-size: 12px;">
+                    Loading authenticated Officer portal sessions...
+                  </div>
+                </div>
+
+                <!-- Inline Add/Edit Officer Credential Drawer Form -->
+                <div id="airgap-cred-form-wrap" style="display: none; margin-top: 16px; padding: 14px; border-radius: var(--r-tile); background: rgba(0, 0, 0, 0.25); border: 1px dashed var(--line);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <strong id="airgap-cred-form-title" style="font-size: 13px; color: var(--acc);">Add Officer Portal Credentials</strong>
+                    <button id="btn-close-cred-form" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px;">✕</button>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                    <div>
+                      <label style="font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px;">Portal Domain *</label>
+                      <input type="text" id="cred-domain-input" placeholder="e.g. gem.gov.in" style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 7px 10px; font-size: 12px;" />
+                    </div>
+                    <div>
+                      <label style="font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px;">Portal Display Name</label>
+                      <input type="text" id="cred-name-input" placeholder="e.g. GeM (Government e-Marketplace)" style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 7px 10px; font-size: 12px;" />
+                    </div>
+                    <div>
+                      <label style="font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px;">Officer Role / Designation</label>
+                      <input type="text" id="cred-role-input" placeholder="e.g. Section Officer / Procurement Officer" style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 7px 10px; font-size: 12px;" />
+                    </div>
+                    <div>
+                      <label style="font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px;">Department / Ministry</label>
+                      <input type="text" id="cred-org-input" placeholder="e.g. Ministry of Electronics & IT" style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 7px 10px; font-size: 12px;" />
+                    </div>
+                  </div>
+                  <div style="margin-bottom: 12px;">
+                    <label style="font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px;">
+                      Session Cookies / Auth Tokens (Key=Value, Cookie string, or Playwright JSON cookies) *
+                    </label>
+                    <textarea id="cred-cookies-input" rows="3" placeholder="GEM_SSO_SESSION=gem_auth_tok_89412; NIC_TOKEN=nic_sso_verified..." style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 8px 10px; font-size: 12px; font-family: monospace;"></textarea>
+                    <span style="font-size: 10.5px; color: var(--muted); display: block; margin-top: 3px;">
+                       Stored locally in <code>session_vault/portal_sessions.json</code>. Zero external transmission.
+                    </span>
+                  </div>
+                  <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn-neumorph" id="btn-cancel-cred-form" style="padding: 6px 14px; font-size: 12px;">Cancel</button>
+                    <button class="btn-neumorph primary" id="btn-save-cred-form" style="padding: 6px 16px; font-size: 12px;">Save to Air-Gap Vault</button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Cookie Vault Expiration Alerts -->
               <div style="padding: 16px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1415,6 +1484,6 @@
 
   </div>
 
-  <script src="/static/app.js?v=6.0"></script>
+  <script src="/static/app.js?v=6.1"></script>
 </body>
 </html>

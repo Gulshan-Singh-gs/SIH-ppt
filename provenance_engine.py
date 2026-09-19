@@ -201,7 +201,13 @@ class ProvenanceEngine:
                     except ValueError:
                         pass
                 if page_match.group(2):
-                    section_title = page_match.group(2).strip()
+                    sec_candidate = page_match.group(2).strip()
+                    # Strip 'Section ' or 'Clause ' prefix if followed by section numbers like '2.1'
+                    m_sec = re.match(r"^(?:Section|Clause)\s+(\d+(?:\.\d+)*)$", sec_candidate, re.IGNORECASE)
+                    if m_sec:
+                        section_title = m_sec.group(1)
+                    else:
+                        section_title = sec_candidate
 
             # Detect section header from line if not already set
             first_line = para_clean.split("\n")[0].strip()

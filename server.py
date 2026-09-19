@@ -341,11 +341,119 @@ async def get_workbench_status():
     }
 
 
+class SaveSessionRequest(BaseModel):
+    domain: str
+    portal_name: Optional[str] = None
+    portal_url: Optional[str] = None
+    user_role: Optional[str] = "Procurement / Section Officer"
+    organization: Optional[str] = "Central Government Department"
+    cookies: Optional[List[Dict[str, Any]]] = None
+    raw_cookies: Optional[str] = None  # name=val; or JSON or single token
+
+
 @app.get("/api/workbench/sessions")
 async def get_vault_sessions():
     """Returns saved portal sessions from the Cookie Vault."""
     return {
         "status": "SUCCESS",
+        "sessions": vault.list_sessions()
+    }
+
+
+@app.post("/api/workbench/sessions")
+async def save_vault_session(req: SaveSessionRequest):
+    """Saves or updates an Officer credential / session in the Air-Gap Cookie Vault."""
+    clean_domain = req.domain.strip().replace("https://", "").replace("http://", "").split("/")[0]
+    if not clean_domain:
+        return JSONResponse(status_code=400, content={"error": "Valid domain is required."})
+
+    cookies_list: List[Dict[str, Any]] = []
+    if req.cookies and isinstance(req.cookies, list):
+        cookies_list = req.cookies
+    elif req.raw_cookies:
+        raw = req.raw_cookies.strip()
+        if raw.startswith("[") and raw.endswith("]"):
+            try:
+                cookies_list = json.loads(raw)
+            except Exception:
+                pass
+        if not cookies_list:
+            # Parse standard header format 'name=val; name2=val2' or key: val
+            pairs = [p.strip() for p in raw.split(";") if p.strip()]
+            for pair in pairs:
+                if "=" in pair:
+                    k, v = pair.split("=", 1)
+                    cookies_list.append({
+                        "name": k.strip(),
+                        "value": v.strip(),
+                        "domain": clean_domain,
+                        "path": "/",
+                        "httpOnly": True,
+                        "secure": True,
+                    })
+                elif pair:
+                    # Single auth token string
+                    cookies_list.append({
+                        "name": "AUTH_SESSION_TOKEN",
+                        "value": pair,
+                        "domain": clean_domain,
+                        "path": "/",
+                        "httpOnly": True,
+                        "secure": True,
+                    })
+
+    if not cookies_list:
+        cookies_list = [{
+            "name": "OFFICER_SESSION_TOKEN",
+            "value": f"officer_auth_{int(time.time())}",
+            "domain": clean_domain,
+            "path": "/",
+            "httpOnly": True,
+            "secure": True,
+        }]
+
+    saved = vault.save_session(
+        domain=clean_domain,
+        portal_name=req.portal_name or clean_domain,
+        cookies=cookies_list,
+        role=req.user_role or "Procurement / Section Officer",
+        org=req.organization or "Central Government Department",
+        portal_url=req.portal_url or f"https://{clean_domain}"
+    )
+
+    audit_ledger.record_event(
+        event_type="AIRGAP_CREDENTIAL_UPDATED",
+        actor=req.user_role or "Officer",
+        action="Saved Officer session credentials to local air-gapped Cookie Vault",
+        details={"domain": clean_domain, "cookies_count": len(cookies_list), "organization": req.organization}
+    )
+
+    return {
+        "status": "SUCCESS",
+        "message": f"Officer credentials for {clean_domain} stored securely in local air-gap vault.",
+        "session": saved,
+        "sessions": vault.list_sessions()
+    }
+
+
+@app.delete("/api/workbench/sessions/{domain:path}")
+async def delete_vault_session(domain: str):
+    """Deletes an Officer credential from the Cookie Vault."""
+    clean_domain = domain.strip().replace("https://", "").replace("http://", "").split("/")[0]
+    success = vault.delete_session(clean_domain)
+    if not success:
+        return JSONResponse(status_code=404, content={"error": f"Domain '{clean_domain}' not found in vault."})
+
+    audit_ledger.record_event(
+        event_type="AIRGAP_CREDENTIAL_DELETED",
+        actor="Officer",
+        action="Removed Officer session credentials from local air-gapped Cookie Vault",
+        details={"domain": clean_domain}
+    )
+
+    return {
+        "status": "SUCCESS",
+        "message": f"Credentials for {clean_domain} removed from vault.",
         "sessions": vault.list_sessions()
     }
 

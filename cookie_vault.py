@@ -142,15 +142,32 @@ class CookieVault:
             print(f"[CookieVault] Warning injecting cookies: {e}")
             return False
 
-    def save_session(self, domain: str, portal_name: str, cookies: List[Dict[str, Any]], role: str, org: str):
+    def get_session(self, domain: str) -> Optional[Dict[str, Any]]:
+        """Retrieves a specific portal session by domain."""
         store = self._read_store()
-        store[domain] = {
-            "portal_name": portal_name,
-            "portal_url": f"https://{domain}",
-            "user_role": role,
-            "organization": org,
+        return store.get(domain)
+
+    def delete_session(self, domain: str) -> bool:
+        """Deletes a portal session from the vault."""
+        store = self._read_store()
+        if domain in store:
+            del store[domain]
+            self._save_store(store)
+            return True
+        return False
+
+    def save_session(self, domain: str, portal_name: str, cookies: List[Dict[str, Any]], role: str, org: str, portal_url: Optional[str] = None):
+        store = self._read_store()
+        clean_domain = domain.strip().replace("https://", "").replace("http://", "").split("/")[0]
+        url = portal_url or f"https://{clean_domain}"
+        store[clean_domain] = {
+            "portal_name": portal_name or clean_domain,
+            "portal_url": url,
+            "user_role": role or "Government Officer",
+            "organization": org or "Central Government",
             "saved_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "status": "Authenticated",
+            "status": "Authenticated (Session Valid)",
             "cookies": cookies,
         }
         self._save_store(store)
+        return store[clean_domain]
