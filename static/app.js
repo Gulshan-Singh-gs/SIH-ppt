@@ -1645,15 +1645,15 @@ document.addEventListener("DOMContentLoaded", () => {
         citationsList.innerHTML = evidence.citations.map((c) => {
           const pgLabel = c.page_number ? `Page ${c.page_number}` : (c.section_id || "Doc Snippet");
           return `
-            <div style="padding: 10px 12px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line); font-size: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <strong style="color: var(--acc); font-size: 11.5px;">${escapeHtml(c.citation_id)} &bull; ${escapeHtml(c.document_name)}</strong>
-                <span class="tag-sih" style="color: var(--ink); font-size: 10.5px; padding: 2px 6px;">${escapeHtml(pgLabel)}</span>
+            <div class="citation-evidence-card" style="padding: 10px 12px; border-radius: var(--r-tile); background: var(--bg-card); border: 1px solid var(--line); font-size: 12px; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; min-width: 0;">
+                <strong style="color: var(--acc); font-size: 11.5px; overflow-wrap: anywhere; word-break: break-word; min-width: 0; flex: 1; line-height: 1.3;">${escapeHtml(c.citation_id)} &bull; ${escapeHtml(c.document_name)}</strong>
+                <span class="tag-sih" style="color: var(--ink); font-size: 10px; padding: 2px 6px; white-space: nowrap; flex-shrink: 0;">${escapeHtml(pgLabel)}</span>
               </div>
-              <p style="color: var(--ink); font-size: 11.5px; margin: 0; line-height: 1.4; font-style: italic;">
+              <p style="color: var(--ink); font-size: 11.5px; margin: 0; line-height: 1.4; font-style: italic; overflow-wrap: anywhere; word-break: break-word;">
                 "${escapeHtml(c.snippet)}"
               </p>
-              <div style="margin-top: 6px; font-size: 10px; color: var(--muted); font-family: var(--font-mono);">
+              <div style="margin-top: 2px; font-size: 10px; color: var(--muted); font-family: var(--font-mono); overflow-wrap: anywhere; word-break: break-all; line-height: 1.3;">
                 SHA: ${escapeHtml(c.sha256_hash || "")}
               </div>
             </div>

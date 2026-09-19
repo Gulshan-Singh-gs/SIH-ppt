@@ -2274,3 +2274,57 @@ textarea.prompt-area {
   }
 }
 
+/* ====================================================================
+   GROUNDED EVIDENCE & CITATION PANEL
+   ==================================================================== */
+#assistant-evidence-panel {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+#evidence-citations-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.citation-evidence-card {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.citation-evidence-card p {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.citation-evidence-card strong {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.citation-sha {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+@media (max-width: 600px) {
+  #evidence-citations-list {
+    grid-template-columns: 1fr;
+  }
+  #assistant-evidence-panel {
+    padding: 12px 14px;
+  }
+}
+
