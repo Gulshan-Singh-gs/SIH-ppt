@@ -132,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const themeToggleLabel = document.getElementById("theme-toggle-label");
 
   function applyTheme(isDark) {
+    const themeName = isDark ? "dark" : "light";
     if (isDark) {
       document.documentElement.setAttribute("data-theme", "dark");
       if (themeIconMoon) themeIconMoon.style.display = "none";
@@ -144,6 +145,25 @@ document.addEventListener("DOMContentLoaded", () => {
       if (themeIconSun) themeIconSun.style.display = "none";
       if (themeToggleLabel) themeToggleLabel.textContent = "Dark Mode";
       localStorage.setItem("workbench_theme", "light");
+    }
+
+    // Sync theme with the embedded portal iframe if present
+    const portalIframe = document.getElementById("portal-live-frame");
+    if (portalIframe) {
+      try {
+        if (portalIframe.contentDocument && portalIframe.contentDocument.documentElement) {
+          if (isDark) {
+            portalIframe.contentDocument.documentElement.setAttribute("data-theme", "dark");
+          } else {
+            portalIframe.contentDocument.documentElement.removeAttribute("data-theme");
+          }
+        }
+        if (portalIframe.contentWindow) {
+          portalIframe.contentWindow.postMessage({ type: "THEME_CHANGE", theme: themeName }, "*");
+        }
+      } catch (err) {
+        // Cross-origin fallback or not yet loaded
+      }
     }
   }
 
@@ -190,9 +210,27 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnOpenPortalIframe && portalIframeModal) {
     btnOpenPortalIframe.addEventListener("click", (e) => {
       e.preventDefault();
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      const targetTheme = isDark ? "dark" : "light";
       const iframe = document.getElementById("portal-live-frame");
-      if (iframe && (!iframe.src || iframe.src === "about:blank")) {
-        iframe.src = "/portal/gem-tenders";
+      if (iframe) {
+        const targetSrc = `/portal/gem-tenders?theme=${targetTheme}`;
+        if (!iframe.src || iframe.src === "about:blank" || !iframe.src.includes("/portal/gem-tenders")) {
+          iframe.src = targetSrc;
+        } else {
+          try {
+            if (iframe.contentDocument && iframe.contentDocument.documentElement) {
+              if (isDark) {
+                iframe.contentDocument.documentElement.setAttribute("data-theme", "dark");
+              } else {
+                iframe.contentDocument.documentElement.removeAttribute("data-theme");
+              }
+            }
+            if (iframe.contentWindow) {
+              iframe.contentWindow.postMessage({ type: "THEME_CHANGE", theme: targetTheme }, "*");
+            }
+          } catch (err) {}
+        }
       }
       portalIframeModal.classList.add("show");
     });

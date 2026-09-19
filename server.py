@@ -1105,41 +1105,43 @@ async def render_mock_gem_portal(request: Request):
     """
     High-fidelity simulated Government e-Marketplace (GeM) procurement board.
     Verifies pre-authenticated session cookie (SOVEREIGN_AUTH_KEY or GEM_SSO_SESSION).
+    Supports dark mode and mobile-responsive layouts.
     """
     cookies = request.cookies
     is_authenticated = (
         cookies.get("SOVEREIGN_AUTH_KEY") == "sovereign_verified_officer_sih_2026"
         or "gem_auth_tok" in cookies.get("GEM_SSO_SESSION", "")
     )
+    req_theme = request.query_params.get("theme", "")
 
     tenders_html = ""
     for t in MOCK_TENDERS_DATA:
         tenders_html += f"""
         <tr class="tender-row">
-          <td><span class="badge-bid">{t['id']}</span></td>
-          <td>
-            <strong>{t['title']}</strong>
+          <td data-label="Tender / Bid ID"><span class="badge-bid">{t['id']}</span></td>
+          <td data-label="Procurement & Ministry">
+            <strong class="tender-title-text">{t['title']}</strong>
             <div class="tender-sub">{t['ministry']} &bull; {t['department']}</div>
             <div class="tender-cat">Category: {t['category']}</div>
           </td>
-          <td><strong class="val-inr">{t['estimated_value_inr']}</strong></td>
-          <td>
+          <td data-label="Estimated Value"><strong class="val-inr">{t['estimated_value_inr']}</strong></td>
+          <td data-label="Closing Schedule">
             <div class="closing-time">{t['closing_date']}</div>
             <span class="status-live">Open for Bidding</span>
           </td>
-          <td>
-            <button class="btn-action" onclick="alert('Viewing specifications for {t['id']}')">View Details</button>
+          <td data-label="Action">
+            <button class="btn-action btn-view-action" onclick="alert('Viewing specifications for {t['id']}')">View Details</button>
           </td>
         </tr>
         """
 
     auth_controls = """
-    <div style="display:flex; align-items:center; gap:10px;">
+    <div class="auth-controls-wrap">
       <span class="badge-secure">Section Officer (MeitY) Active</span>
       <button class="btn-action" onclick="document.cookie='SOVEREIGN_AUTH_KEY=; max-age=0; path=/;'; document.cookie='GEM_SSO_SESSION=; max-age=0; path=/;'; window.location.reload();">Sign Out (Test Public Mode)</button>
     </div>
     """ if is_authenticated else """
-    <div style="display:flex; align-items:center; gap:10px;">
+    <div class="auth-controls-wrap">
       <button class="btn-action" onclick="document.getElementById('manual-login-modal').style.display='flex'">Manual Sign In (Password & OTP)</button>
       <button class="btn-action" onclick="document.cookie='SOVEREIGN_AUTH_KEY=sovereign_verified_officer_sih_2026; path=/;'; window.location.reload();" style="background:#059669; color:#fff;">Inject Cookie Vault (Zero OTP)</button>
     </div>
@@ -1165,7 +1167,7 @@ async def render_mock_gem_portal(request: Request):
           <div class="auth-sub">Full tender documents, technical specifications, and pricing sheets require authorized officer login.</div>
         </div>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div class="banner-actions">
         <button class="btn-action" onclick="document.getElementById('manual-login-modal').style.display='flex'">Manual Sign In</button>
         <button class="btn-action" onclick="document.cookie='SOVEREIGN_AUTH_KEY=sovereign_verified_officer_sih_2026; path=/;'; window.location.reload();" style="background:#059669; color:#fff;">One-Click Vault Bypass</button>
       </div>
@@ -1173,49 +1175,191 @@ async def render_mock_gem_portal(request: Request):
     """
 
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" {"data-theme='dark'" if req_theme == 'dark' else ""}>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Government e-Marketplace (GeM) &bull; Public Procurement Portal</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <style>
     :root {{
       --bg: #e4e9f2;
+      --card-bg: #e4e9f2;
       --ink: #333a52;
       --mut: #5a6178;
       --acc: #059669;
+      --border: #cbd5e1;
+      --border-row: #e2e8f0;
+      --badge-bg: #e2e8f0;
+      --badge-ink: #1e293b;
       --shadow-raised: 6px 6px 12px #c8cfdc, -6px -6px 12px #ffffff;
+      --shadow-raised-sm: 3px 3px 6px #c8cfdc, -3px -3px 6px #ffffff;
       --shadow-inset: inset 3px 3px 6px #c8cfdc, inset -3px -3px 6px #ffffff;
     }}
+
+    [data-theme="dark"], body.dark {{
+      --bg: #000000;
+      --card-bg: #07080b;
+      --ink: #f0f3fa;
+      --mut: #8b93a7;
+      --acc: #10b981;
+      --border: #161922;
+      --border-row: #141722;
+      --badge-bg: #151822;
+      --badge-ink: #cbd5e1;
+      --shadow-raised: 4px 4px 10px #000000, -2px -2px 8px #141722;
+      --shadow-raised-sm: 2px 2px 6px #000000, -1px -1px 4px #141722;
+      --shadow-inset: inset 3px 3px 7px #000000, inset -2px -2px 6px #141722;
+    }}
+
     * {{ margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
-    body {{ background: var(--bg); color: var(--ink); padding: 24px; }}
-    .header {{ display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-radius:16px; box-shadow:var(--shadow-raised); margin-bottom:20px; background:var(--bg); flex-wrap:wrap; gap:12px; }}
-    .header h1 {{ font-size: 20px; font-weight:700; color:var(--ink); }}
-    .header p {{ font-size: 13px; color:var(--mut); }}
-    .auth-banner {{ display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-radius:12px; margin-bottom:20px; box-shadow:var(--shadow-inset); flex-wrap:wrap; gap:12px; }}
+    body {{ background: var(--bg); color: var(--ink); padding: 20px; transition: background 0.2s ease, color 0.2s ease; }}
+    .header {{ display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-radius:16px; box-shadow:var(--shadow-raised); margin-bottom:20px; background:var(--card-bg); flex-wrap:wrap; gap:12px; border:1px solid var(--border); }}
+    .header h1 {{ font-size: 19px; font-weight:700; color:var(--ink); }}
+    .header p {{ font-size: 13px; color:var(--mut); margin-top:2px; }}
+    .auth-controls-wrap {{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }}
+    
+    .auth-banner {{ display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-radius:12px; margin-bottom:20px; box-shadow:var(--shadow-inset); flex-wrap:wrap; gap:12px; background:var(--card-bg); border:1px solid var(--border); }}
     .auth-banner.active {{ background: rgba(5, 150, 105, 0.08); border-left: 4px solid var(--acc); }}
     .auth-banner.challenge {{ background: rgba(217, 119, 6, 0.08); border-left: 4px solid #d97706; }}
-    .auth-status {{ display:flex; align-items:center; gap:12px; }}
-    .auth-dot {{ width:10px; height:10px; border-radius:50%; background:var(--acc); }}
+    .auth-status {{ display:flex; align-items:center; gap:12px; min-width:0; }}
+    .auth-dot {{ width:10px; height:10px; border-radius:50%; background:var(--acc); flex-shrink:0; }}
     .auth-dot.warning {{ background:#d97706; }}
     .auth-sub {{ font-size:12px; color:var(--mut); margin-top:2px; }}
-    .badge-secure {{ font-size:11px; padding:4px 10px; border-radius:20px; background:var(--acc); color:#fff; font-weight:600; }}
-    .table-container {{ border-radius:16px; box-shadow:var(--shadow-raised); overflow:hidden; background:var(--bg); padding:16px; }}
+    .badge-secure {{ font-size:11px; padding:4px 10px; border-radius:20px; background:var(--acc); color:#fff; font-weight:600; white-space:nowrap; }}
+    .banner-actions {{ display:flex; gap:8px; flex-wrap:wrap; }}
+
+    .table-container {{ border-radius:16px; box-shadow:var(--shadow-raised); overflow-x:auto; background:var(--card-bg); padding:16px; border:1px solid var(--border); }}
     table {{ width:100%; border-collapse:collapse; text-align:left; }}
-    th {{ padding:14px 16px; font-size:12px; text-transform:uppercase; color:var(--mut); border-bottom:1px solid #cbd5e1; }}
-    td {{ padding:16px; border-bottom:1px solid #e2e8f0; font-size:13px; }}
-    .badge-bid {{ font-weight:700; font-size:11px; color:#1e293b; background:#e2e8f0; padding:3px 8px; border-radius:6px; }}
+    th {{ padding:14px 16px; font-size:12px; text-transform:uppercase; color:var(--mut); border-bottom:1px solid var(--border); letter-spacing:0.5px; }}
+    td {{ padding:16px; border-bottom:1px solid var(--border-row); font-size:13px; color:var(--ink); }}
+    .badge-bid {{ font-weight:700; font-size:11px; color:var(--badge-ink); background:var(--badge-bg); padding:3px 8px; border-radius:6px; font-family:monospace; display:inline-block; }}
+    .tender-title-text {{ color:var(--ink); font-size:13.5px; line-height:1.4; display:block; }}
     .tender-sub {{ font-size:12px; color:var(--mut); margin-top:4px; }}
-    .tender-cat {{ font-size:11px; color:#0284c7; margin-top:2px; }}
-    .val-inr {{ font-size:14px; color:#0f172a; }}
-    .closing-time {{ font-size:12px; font-weight:600; color:#dc2626; }}
+    .tender-cat {{ font-size:11px; color:#38bdf8; margin-top:2px; }}
+    .val-inr {{ font-size:14px; color:var(--ink); font-weight:700; }}
+    .closing-time {{ font-size:12px; font-weight:600; color:#ef4444; }}
     .status-live {{ font-size:11px; color:var(--acc); font-weight:600; }}
-    .btn-action {{ padding:7px 14px; border-radius:8px; border:none; background:var(--bg); box-shadow:var(--shadow-raised); cursor:pointer; font-size:12px; font-weight:600; color:var(--ink); }}
+    
+    .btn-action {{ padding:7px 14px; border-radius:8px; border:none; background:var(--card-bg); box-shadow:var(--shadow-raised-sm); cursor:pointer; font-size:12px; font-weight:600; color:var(--ink); transition:all 0.15s ease; border:1px solid var(--border); }}
     .btn-action:hover {{ box-shadow:var(--shadow-inset); }}
-    .modal-overlay {{ display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.45); z-index:100; align-items:center; justify-content:center; }}
-    .modal-box {{ background:var(--bg); padding:28px; border-radius:18px; box-shadow:var(--shadow-raised); max-width:460px; width:90%; border:1px solid #fff; }}
+    .btn-action:active {{ transform: scale(0.98); }}
+
+    .modal-overlay {{ display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.65); z-index:100; align-items:center; justify-content:center; padding:16px; }}
+    .modal-box {{ background:var(--card-bg); padding:24px; border-radius:18px; box-shadow:var(--shadow-raised); max-width:460px; width:100%; border:1px solid var(--border); max-height:90vh; overflow-y:auto; }}
+
+    /* RESPONSIVE DESIGN FOR MOBILE DEVICES */
+    @media (max-width: 768px) {{
+      body {{ padding: 12px; }}
+      .header {{ padding: 14px; border-radius: 12px; margin-bottom: 12px; }}
+      .header h1 {{ font-size: 16px; }}
+      .header p {{ font-size: 11.5px; }}
+      .auth-banner {{ padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; }}
+      .auth-banner strong {{ font-size: 13px; }}
+      .table-container {{ padding: 10px; border-radius: 12px; }}
+      th, td {{ padding: 10px; font-size: 12px; }}
+      .btn-action {{ padding: 6px 10px; font-size: 11.5px; }}
+    }}
+
+    @media (max-width: 640px) {{
+      body {{ padding: 8px; }}
+      .header {{ flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; }}
+      .auth-controls-wrap {{ width: 100%; justify-content: flex-start; }}
+      .auth-banner {{ flex-direction: column; align-items: flex-start; gap: 10px; }}
+      .banner-actions {{ width: 100%; justify-content: stretch; }}
+      .banner-actions .btn-action {{ flex: 1; text-align: center; }}
+      
+      /* Mobile Card Layout for Table Rows */
+      table, thead, tbody, th, td, tr {{ display: block; }}
+      thead tr {{ position: absolute; top: -9999px; left: -9999px; }}
+      tr.tender-row {{
+        margin-bottom: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        background: var(--card-bg);
+        box-shadow: var(--shadow-raised-sm);
+        border: 1px solid var(--border);
+      }}
+      td {{
+        border: none;
+        padding: 6px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+      }}
+      td:not(:last-child) {{
+        border-bottom: 1px dashed var(--border-row);
+      }}
+      td::before {{
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 11px;
+        color: var(--mut);
+        text-transform: uppercase;
+        min-width: 105px;
+        flex-shrink: 0;
+      }}
+      td[data-label="Procurement & Ministry"] {{
+        flex-direction: column;
+        align-items: flex-start;
+      }}
+      td[data-label="Procurement & Ministry"]::before {{
+        margin-bottom: 4px;
+      }}
+      td[data-label="Action"] {{
+        margin-top: 4px;
+        padding-top: 8px;
+        justify-content: flex-end;
+      }}
+      .btn-view-action {{
+        width: 100%;
+        text-align: center;
+        padding: 9px;
+      }}
+    }}
   </style>
+  <script>
+    // Theme auto-sync from localStorage, parent iframe, and system preference
+    function syncPortalTheme() {{
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryTheme = urlParams.get('theme');
+      const storedTheme = localStorage.getItem('workbench_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      let finalTheme = 'light';
+      if (queryTheme === 'dark') {{
+        finalTheme = 'dark';
+      }} else if (queryTheme === 'light') {{
+        finalTheme = 'light';
+      }} else if (storedTheme) {{
+        finalTheme = storedTheme;
+      }} else if (prefersDark) {{
+        finalTheme = 'dark';
+      }}
+
+      if (finalTheme === 'dark') {{
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }} else {{
+        document.documentElement.removeAttribute('data-theme');
+      }}
+    }}
+
+    // Listen for live theme updates from parent Workbench
+    window.addEventListener('message', function(e) {{
+      if (e.data && e.data.type === 'THEME_CHANGE') {{
+        if (e.data.theme === 'dark') {{
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }} else {{
+          document.documentElement.removeAttribute('data-theme');
+        }}
+      }}
+    }});
+
+    // Initialize on DOM ready
+    syncPortalTheme();
+    window.addEventListener('DOMContentLoaded', syncPortalTheme);
+  </script>
 </head>
 <body>
   <div class="header">
@@ -1254,23 +1398,23 @@ async def render_mock_gem_portal(request: Request):
       </div>
       <div style="margin-bottom:12px;">
         <label style="font-size:11px; font-weight:bold; color:var(--mut); display:block; margin-bottom:4px;">Officer NIC Username / Email</label>
-        <input type="text" value="so_procurement@meity.gov.in" style="width:100%; padding:9px 12px; border-radius:8px; border:none; box-shadow:var(--shadow-inset); font-size:13px; background:var(--bg); color:var(--ink);">
+        <input type="text" value="so_procurement@meity.gov.in" style="width:100%; padding:9px 12px; border-radius:8px; border:none; box-shadow:var(--shadow-inset); font-size:13px; background:var(--card-bg); color:var(--ink); border:1px solid var(--border);">
       </div>
       <div style="margin-bottom:12px;">
         <label style="font-size:11px; font-weight:bold; color:var(--mut); display:block; margin-bottom:4px;">Portal Password</label>
-        <input type="password" value="SovereignSecure2026!" style="width:100%; padding:9px 12px; border-radius:8px; border:none; box-shadow:var(--shadow-inset); font-size:13px; background:var(--bg); color:var(--ink);">
+        <input type="password" value="SovereignSecure2026!" style="width:100%; padding:9px 12px; border-radius:8px; border:none; box-shadow:var(--shadow-inset); font-size:13px; background:var(--card-bg); color:var(--ink); border:1px solid var(--border);">
       </div>
       <div style="margin-bottom:16px; padding:12px; border-radius:10px; background:rgba(217, 119, 6, 0.08); border-left:3px solid #d97706;">
         <strong style="font-size:12px; color:#d97706; display:block;">Two-Factor Authentication (OTP Challenge)</strong>
         <p style="font-size:11.5px; color:var(--mut); margin-top:3px; line-height:1.5;">Traditional automated bots fail or stall here waiting for manual mobile SMS/email OTPs. With our Sovereign Cookie Vault, this entire login & OTP process is pre-authenticated with zero human waiting.</p>
         <div style="display:flex; gap:8px; margin-top:8px;">
-          <input type="text" placeholder="6-digit SMS OTP..." style="flex:1; padding:7px 10px; border-radius:6px; border:none; box-shadow:var(--shadow-inset); font-size:12px; background:var(--bg); color:var(--ink);">
+          <input type="text" placeholder="6-digit SMS OTP..." style="flex:1; padding:7px 10px; border-radius:6px; border:none; box-shadow:var(--shadow-inset); font-size:12px; background:var(--card-bg); color:var(--ink); border:1px solid var(--border);">
           <button class="btn-action" onclick="alert('Simulated SMS OTP: In live demonstrations, waiting for mobile OTPs disrupts automation. The Cookie Vault eliminates this bottleneck!')" style="font-size:11px;">Resend OTP</button>
         </div>
       </div>
-      <div style="display:flex; justify-content:space-between; gap:10px;">
-        <button class="btn-action" onclick="document.cookie='SOVEREIGN_AUTH_KEY=sovereign_verified_officer_sih_2026; path=/;'; window.location.reload();" style="flex:1; background:#059669; color:#fff;">Inject Cookie Vault (Zero OTP)</button>
-        <button class="btn-action" onclick="document.cookie='SOVEREIGN_AUTH_KEY=sovereign_verified_officer_sih_2026; path=/;'; window.location.reload();" style="flex:1;">Manual Sign In</button>
+      <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <button class="btn-action" onclick="document.cookie='SOVEREIGN_AUTH_KEY=sovereign_verified_officer_sih_2026; path=/;'; window.location.reload();" style="flex:1; background:#059669; color:#fff; min-width:140px;">Inject Cookie Vault (Zero OTP)</button>
+        <button class="btn-action" onclick="document.cookie='SOVEREIGN_AUTH_KEY=sovereign_verified_officer_sih_2026; path=/;'; window.location.reload();" style="flex:1; min-width:120px;">Manual Sign In</button>
       </div>
     </div>
   </div>

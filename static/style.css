@@ -2237,3 +2237,40 @@ textarea.prompt-area {
   }
 }
 
+/* ====================================================================
+   PORTAL IFRAME MODAL RESPONSIVENESS
+   ==================================================================== */
+@media (max-width: 768px) {
+  .portal-modal-backdrop {
+    padding: 8px !important;
+  }
+  .portal-modal-card {
+    width: 100% !important;
+    height: 94vh !important;
+    max-height: 94vh !important;
+    padding: 12px !important;
+    border-radius: var(--r-tile) !important;
+    gap: 10px !important;
+  }
+  .portal-modal-header strong {
+    font-size: 13.5px !important;
+  }
+  .portal-modal-header span {
+    font-size: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .portal-modal-backdrop {
+    padding: 0 !important;
+  }
+  .portal-modal-card {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 10px !important;
+  }
+}
+
